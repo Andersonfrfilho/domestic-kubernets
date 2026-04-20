@@ -1,0 +1,9 @@
+# Habilita modo HTTP no ArgoCD server (sem TLS).
+# Em produção use TLS + cert-manager. Para rede local HTTP é suficiente.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cmd-params-cm
+  namespace: argocd
+data:
+  server.insecure: "true"

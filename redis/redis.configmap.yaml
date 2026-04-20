@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: domestic
+  labels:
+    app: redis
+data:
+  # Save snapshot to disk: every 60s if at least 1 key changed.
+  # append-only file disabled for local dev (enable for production durability).
+  REDIS_ARGS: "--save 60 1 --loglevel warning --appendonly no"

@@ -1,0 +1,111 @@
+apiVersion: skaffold/v4beta11
+kind: Config
+metadata:
+  name: domestic-stack
+
+build:
+  artifacts:
+    - image: domestic-api
+      context: ../domestic-backend-api
+      docker:
+        dockerfile: Dockerfile.dev
+      # Sincroniza arquivos TypeScript sem rebuild completo — hot-reload via NestJS watch.
+      sync:
+        infer:
+          - "src/**/*.ts"
+          - "src/**/*.json"
+
+deploy:
+  kubectl:
+    manifests:
+      - namespace.yaml
+      - postgres/*.yaml
+      - postgres-keycloak/*.yaml
+      - mongo/*.yaml
+      - redis/*.yaml
+      - rabbitmq/*.yaml
+      - minio/*.yaml
+      - keycloak/*.yaml
+      - migrator/*.yaml
+      - api/*.yaml
+      - kong/*.yaml
+      - ingress/ingress-core.yaml
+      - ingress/ingress-services.yaml
+      - ingress/ingress-infra.yaml
+      # Descomente quando os serviços existirem:
+      # - bff/*.yaml
+      # - worker/*.yaml
+      # - cron/*.yaml
+
+# ──────────────────────────────────────────────────────────
+# Perfis — selecione com: skaffold dev --profile=<nome>
+# ──────────────────────────────────────────────────────────
+profiles:
+
+  # Dev solo no macOS com daemon do minikube (sem registry externo)
+  - name: minikube
+    activation:
+      - kubeContext: minikube
+    build:
+      local:
+        useDockerCLI: true   # usa o daemon do minikube via eval $(minikube docker-env)
+      artifacts:
+        - image: domestic-api:local
+          context: ../domestic-backend-api
+          docker:
+            dockerfile: Dockerfile.dev
+          sync:
+            infer:
+              - "src/**/*.ts"
+
+  # Ubuntu server com registry local na LAN (192.168.1.100:5000)
+  # Uso: skaffold dev --profile=ubuntu
+  - name: ubuntu
+    build:
+      local:
+        useDockerCLI: true
+        push: true           # faz push para o registry depois do build
+      artifacts:
+        - image: 192.168.1.100:5000/domestic-api
+          context: ../domestic-backend-api
+          docker:
+            dockerfile: Dockerfile.dev
+          sync:
+            infer:
+              - "src/**/*.ts"
+              - "src/**/*.json"
+
+  # Com observabilidade (Grafana, Prometheus, Loki, Jaeger)
+  - name: observability
+    patches:
+      - op: add
+        path: /deploy/kubectl/manifests/-
+        value: "observability/**/*.yaml"
+      - op: add
+        path: /deploy/kubectl/manifests/-
+        value: "ingress/ingress-observability.yaml"
+
+  # Stack completa: ubuntu + observabilidade + backup
+  - name: full
+    build:
+      local:
+        useDockerCLI: true
+        push: true
+      artifacts:
+        - image: 192.168.1.100:5000/domestic-api
+          context: ../domestic-backend-api
+          docker:
+            dockerfile: Dockerfile.dev
+          sync:
+            infer:
+              - "src/**/*.ts"
+    patches:
+      - op: add
+        path: /deploy/kubectl/manifests/-
+        value: "observability/**/*.yaml"
+      - op: add
+        path: /deploy/kubectl/manifests/-
+        value: "ingress/ingress-observability.yaml"
+      - op: add
+        path: /deploy/kubectl/manifests/-
+        value: "backup/*.yaml"

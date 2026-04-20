@@ -1,0 +1,37 @@
+# ArgoCD AppProject — agrupa e restringe os Applications do projeto domestic
+#
+# O AppProject define quais repositórios e clusters são permitidos,
+# evitando que Applications de outros projetos afetem o namespace domestic.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: domestic
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: domestic
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: "Domestic platform — todos os serviços e infraestrutura"
+
+  # Repositórios git permitidos para este projeto
+  sourceRepos:
+    - "CHANGE_ME_GIT_REPO_URL"
+
+  # Clusters e namespaces onde este projeto pode fazer deploy
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: domestic
+    - server: https://kubernetes.default.svc
+      namespace: argocd
+
+  # Recursos Kubernetes que este projeto pode gerenciar
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+    - group: storage.k8s.io
+      kind: StorageClass
+
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"

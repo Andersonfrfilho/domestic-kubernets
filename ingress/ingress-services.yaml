@@ -1,0 +1,146 @@
+# Ingress — Serviços internos do domínio domestic
+#
+# Este arquivo centraliza o acesso direto a cada serviço da aplicação,
+# tornando a topologia de conexão visível e gerenciável num só lugar.
+#
+# ARQUITETURA DE ACESSO (legibilidade):
+#
+#   LAN / Equipe de dev
+#     │
+#     ├── gateway.domestic.local  ──────────────►  Kong (auth + rate-limit + routing)
+#     │                                               ├──►  api:3000
+#     │                                               ├──►  bff:3001
+#     │                                               └──►  worker:3002 (health/admin)
+#     │
+#     ├── api.domestic.local      ──►  API      (acesso direto — dev/debug)
+#     ├── bff.domestic.local      ──►  BFF      (acesso direto — dev/debug)
+#     ├── worker.domestic.local   ──►  Worker   (health + Bull Board admin)
+#     ├── cron.domestic.local     ──►  Cron     (health + trigger manual)
+#     ├── keycloak.domestic.local ──►  Keycloak (auth / login flows)
+#     ├── storage.domestic.local  ──►  MinIO console
+#     ├── queue.domestic.local    ──►  RabbitMQ management
+#     ├── grafana.domestic.local  ──►  Grafana dashboards
+#     ├── metrics.domestic.local  ──►  Prometheus
+#     └── tracing.domestic.local  ──►  Jaeger UI
+---
+# API — acesso direto (dev/debug, bypassa Kong).
+# Em produção todo tráfego vem via gateway.domestic.local.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-api-direct
+  namespace: domestic
+  labels:
+    app.kubernetes.io/part-of: domestic
+    tier: app
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: api.domestic.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 3000
+---
+# BFF (Backend-for-Frontend) — acesso direto (dev/debug).
+# O BFF agrega chamadas de múltiplos serviços para o cliente mobile/web.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-bff
+  namespace: domestic
+  labels:
+    app.kubernetes.io/part-of: domestic
+    tier: app
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: bff.domestic.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bff
+                port:
+                  number: 3001
+---
+# Worker — health check e Bull Board (dashboard de filas).
+# O worker não expõe endpoints de negócio — só saúde e administração de filas.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-worker
+  namespace: domestic
+  labels:
+    app.kubernetes.io/part-of: domestic
+    tier: app
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: worker.domestic.local
+      http:
+        paths:
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: worker
+                port:
+                  number: 3002
+          # Bull Board — dashboard de filas RabbitMQ (se habilitado no worker)
+          - path: /admin/queues
+            pathType: Prefix
+            backend:
+              service:
+                name: worker
+                port:
+                  number: 3002
+---
+# Cron — health check e trigger manual de jobs.
+# Permite verificar status dos jobs agendados e disparar manualmente via HTTP.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-cron
+  namespace: domestic
+  labels:
+    app.kubernetes.io/part-of: domestic
+    tier: app
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: cron.domestic.local
+      http:
+        paths:
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: cron
+                port:
+                  number: 3003
+          # Trigger manual de jobs (útil em dev para não esperar o agendamento)
+          - path: /jobs
+            pathType: Prefix
+            backend:
+              service:
+                name: cron
+                port:
+                  number: 3003

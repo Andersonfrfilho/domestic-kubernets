@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kong
+  namespace: domestic
+  labels:
+    app: kong
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kong
+  template:
+    metadata:
+      labels:
+        app: kong
+    spec:
+      initContainers:
+        - name: wait-for-api
+          image: busybox:1.36
+          command: [sh, -c, "until nc -z api 3000; do echo waiting for api; sleep 2; done"]
+        - name: wait-for-keycloak
+          image: busybox:1.36
+          command: [sh, -c, "until nc -z keycloak 8080; do echo waiting for keycloak; sleep 2; done"]
+      containers:
+        - name: kong
+          image: kong:3.6
+          ports:
+            - containerPort: 8000
+              name: proxy
+            - containerPort: 8001
+              name: admin
+          envFrom:
+            - configMapRef:
+                name: kong-env-config
+          volumeMounts:
+            - name: kong-declarative
+              mountPath: /kong/declarative
+              readOnly: true
+          resources:
+            requests:
+              memory: "384Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 8001
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 5
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 8001
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+            timeoutSeconds: 10
+      volumes:
+        # Created via: kubectl create configmap kong-declarative-config \
+        #   --from-file=kong.yml=./kong/kong.yml -n domestic
+        - name: kong-declarative
+          configMap:
+            name: kong-declarative-config

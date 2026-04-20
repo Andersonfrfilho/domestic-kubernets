@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cron
+  namespace: domestic
+  labels:
+    app: cron
+spec:
+  selector:
+    app: cron
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3003
+      targetPort: 3003

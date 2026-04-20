@@ -1,0 +1,76 @@
+# Ingress — Observabilidade: Grafana, Prometheus, Jaeger
+#
+# Padrão de domínio: <serviço>.domestic.local
+#
+# DNS: adicione junto com os outros hosts
+#   <METALLB-IP>  grafana.domestic.local metrics.domestic.local tracing.domestic.local
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-grafana
+  namespace: domestic
+  labels:
+    app.kubernetes.io/part-of: domestic
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: grafana.domestic.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana
+                port:
+                  number: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-prometheus
+  namespace: domestic
+  labels:
+    app.kubernetes.io/part-of: domestic
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: metrics.domestic.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus
+                port:
+                  number: 9090
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-jaeger
+  namespace: domestic
+  labels:
+    app.kubernetes.io/part-of: domestic
+  annotations:
+    # Jaeger UI usa WebSocket para streaming de traces.
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: tracing.domestic.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jaeger
+                port:
+                  number: 16686

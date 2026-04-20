@@ -1,0 +1,90 @@
+# Ingress — Entry points externos da stack domestic
+#
+# Arquitetura de acesso:
+#
+#   Internet/LAN  →  Ingress Controller (nginx, IP MetalLB)
+#                       ├── gateway.domestic.local  →  Kong (proxy 8000)  →  api:3000
+#                       └── keycloak.domestic.local →  Keycloak (8080)
+#
+# O serviço "api" (porta 3000) NÃO tem Ingress direto.
+# Toda chamada à API vem pelo Kong — é ele quem aplica auth, rate-limit, roteamento.
+# O acesso interno ao api ocorre via ClusterIP (kong → api:3000).
+#
+# Padrão de domínio: <serviço>.domestic.local
+#
+# Pré-requisitos:
+#   minikube addons enable ingress
+#   kubectl wait -n ingress-nginx --for=condition=ready pod \
+#     --selector=app.kubernetes.io/component=controller --timeout=120s
+#
+# Configure DNS em TODOS os dispositivos da rede local:
+#   Opção A — /etc/hosts (só na máquina host):
+#     <METALLB-IP>  gateway.domestic.local keycloak.domestic.local
+#   Opção B — DNS local (Pi-hole / dnsmasq / Unbound) — recomendado para compartilhar na rede:
+#     address=/.domestic.local/<METALLB-IP>
+#
+# Descubra o IP atribuído pelo MetalLB:
+#   kubectl get svc -n ingress-nginx ingress-nginx-controller
+---
+# Kong — Gateway principal. Todas as chamadas de API passam por aqui.
+# O Kong aplica autenticação Keycloak, rate-limiting, roteamento por path/host.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-gateway
+  namespace: domestic
+  labels:
+    app.kubernetes.io/part-of: domestic
+    tier: gateway
+  annotations:
+    # Kong gerencia seus próprios timeouts — desabilita o buffer do nginx para não duplicar latência.
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    # Preserva o IP real do cliente para o Kong repassar ao upstream.
+    nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: gateway.domestic.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kong
+                port:
+                  number: 8000
+---
+# Keycloak — Portal de autenticação OAuth2/OIDC.
+# Usado pelo browser do usuário para login e pelo Kong para introspection de token.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-keycloak
+  namespace: domestic
+  labels:
+    app.kubernetes.io/part-of: domestic
+    tier: auth
+  annotations:
+    # Keycloak emite cookies grandes e faz redirecionamentos — aumenta buffer de headers.
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    # Preserva o host original para que os redirect_uri do Keycloak funcionem corretamente.
+    nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: keycloak.domestic.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: keycloak
+                port:
+                  number: 8080

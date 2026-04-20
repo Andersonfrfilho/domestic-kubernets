@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: domestic
+  labels:
+    app: worker
+spec:
+  # Workers podem ser escalados horizontalmente para aumentar throughput de filas.
+  # Cada réplica consome mensagens em paralelo do RabbitMQ.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command: [sh, -c, "until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done"]
+        - name: wait-for-rabbitmq
+          image: busybox:1.36
+          command: [sh, -c, "until nc -z rabbitmq 5672; do echo waiting for rabbitmq; sleep 2; done"]
+        - name: wait-for-redis
+          image: busybox:1.36
+          command: [sh, -c, "until nc -z redis 6379; do echo waiting for redis; sleep 2; done"]
+      containers:
+        - name: worker
+          # Registry local Ubuntu:  192.168.1.100:5000/domestic-worker:latest
+          # Daemon minikube:        domestic-worker:local
+          image: domestic-worker:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            # Health check e Bull Board (dashboard de filas), se habilitado
+            - containerPort: 3002
+              name: http
+          envFrom:
+            - configMapRef:
+                name: worker-config
+            - secretRef:
+                name: worker-secret
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 5

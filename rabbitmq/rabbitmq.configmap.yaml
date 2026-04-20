@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-config
+  namespace: domestic
+  labels:
+    app: rabbitmq
+data:
+  rabbitmq.conf: |
+    vm_memory_high_watermark.relative = 0.6
+    disk_free_limit.absolute = 1GB

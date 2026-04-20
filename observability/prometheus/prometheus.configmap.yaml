@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-args-config
+  namespace: domestic
+  labels:
+    app: prometheus
+data:
+  retention: "200h"
+  storage-path: "/prometheus"
+# NOTE: prometheus.yml scrape config is mounted from a separate ConfigMap.
+# Create it before applying:
+#   kubectl create configmap prometheus-scrape-config \
+#     --from-file=prometheus.yml=./monitoring/prometheus.yml -n domestic

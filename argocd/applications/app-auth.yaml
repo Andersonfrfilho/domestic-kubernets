@@ -1,0 +1,44 @@
+# ArgoCD Application — Autenticação
+# Gerencia: PostgreSQL (Keycloak), Keycloak
+#
+# Sync wave 2: sobe após a infra de banco estar pronta.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: domestic-auth
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: domestic
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: domestic
+
+  sources:
+    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+      targetRevision: HEAD
+      path: postgres-keycloak
+
+    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+      targetRevision: HEAD
+      path: keycloak
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: domestic
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+    retry:
+      limit: 5
+      backoff:
+        duration: 15s
+        factor: 2
+        maxDuration: 5m

@@ -1,0 +1,79 @@
+# ArgoCD Application — Serviços da aplicação
+# Gerencia: migrator (Job), API, Kong, BFF, Worker, Cron, Ingress
+#
+# Sync wave 3: sobe após infra + auth estarem prontos.
+# O migrator Job é gerenciado aqui — ArgoCD o reaplica quando o manifesto mudar.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: domestic-services
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: domestic
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: domestic
+
+  sources:
+    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+      targetRevision: HEAD
+      path: migrator
+
+    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+      targetRevision: HEAD
+      path: api
+
+    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+      targetRevision: HEAD
+      path: kong
+
+    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+      targetRevision: HEAD
+      path: bff
+
+    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+      targetRevision: HEAD
+      path: worker
+
+    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+      targetRevision: HEAD
+      path: cron
+
+    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+      targetRevision: HEAD
+      path: ingress
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: domestic
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      # Jobs são imutáveis — deixa o ArgoCD substituir ao invés de aplicar patch
+      - Replace=false
+    retry:
+      limit: 5
+      backoff:
+        duration: 15s
+        factor: 2
+        maxDuration: 5m
+
+  # Ignora diferenças que o Kubernetes preenche automaticamente (evita re-sync infinito)
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    - group: batch
+      kind: Job
+      jsonPointers:
+        - /spec/selector
+        - /spec/template/metadata/labels

@@ -1,0 +1,60 @@
+# ArgoCD Application — Infraestrutura stateful
+# Gerencia: PostgreSQL (app), MongoDB, Redis, RabbitMQ, MinIO
+#
+# Sync wave 1: esses serviços sobem primeiro.
+# Os demais Applications dependem deles indiretamente via initContainers.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: domestic-infra
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: domestic
+  annotations:
+    # Sync wave: infra sobe antes de auth e app
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: domestic
+
+  # Multi-source: cada diretório é uma source separada (ArgoCD v2.6+)
+  sources:
+    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+      targetRevision: HEAD
+      path: postgres
+
+    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+      targetRevision: HEAD
+      path: mongo
+
+    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+      targetRevision: HEAD
+      path: redis
+
+    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+      targetRevision: HEAD
+      path: rabbitmq
+
+    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+      targetRevision: HEAD
+      path: minio
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: domestic
+
+  syncPolicy:
+    automated:
+      prune: true      # remove recursos que foram deletados do git
+      selfHeal: true   # reaplica se alguém editar manualmente no cluster
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m

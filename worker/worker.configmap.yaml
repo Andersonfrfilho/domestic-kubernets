@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: worker-config
+  namespace: domestic
+  labels:
+    app: worker
+data:
+  NODE_ENV: "development"
+  NODE_OPTIONS: "--max-old-space-size=512"
+  PORT: "3002"
+  # Banco principal
+  DATABASE_POSTGRES_HOST: "postgres"
+  DATABASE_POSTGRES_PORT: "5432"
+  DATABASE_POSTGRES_NAME: "backend_database_postgres"
+  DATABASE_POSTGRES_SYNCHRONIZE: "false"
+  DATABASE_POSTGRES_LOGGING: "false"
+  DATABASE_POSTGRES_TIMEZONE: "Z"
+  # MongoDB
+  DATABASE_MONGO_HOST: "mongo"
+  MONGO_URI: "mongodb://mongo:27017/backend_database_mongo"
+  # Cache
+  CACHE_REDIS_HOST: "redis"
+  CACHE_REDIS_PORT: "6379"
+  # Fila — worker consome mensagens do RabbitMQ
+  QUEUE_RABBITMQ_HOST: "rabbitmq"
+  QUEUE_RABBITMQ_PORT: "5672"
+  # Storage (para processar uploads, gerar relatórios, etc.)
+  STORAGE_MINIO_ENDPOINT: "minio"
+  STORAGE_MINIO_PORT: "9000"

@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: domestic
+  labels:
+    app: api
+data:
+  NODE_ENV: "development"
+  NODE_OPTIONS: "--max-old-space-size=512"
+  PORT: "3000"
+  DATABASE_POSTGRES_HOST: "postgres"
+  DATABASE_POSTGRES_PORT: "5432"
+  DATABASE_POSTGRES_NAME: "domestic_postgres"
+  DATABASE_MONGO_HOST: "mongo"
+  MONGO_URI: "mongodb://mongo:27017/domestic_mongo"
+  CACHE_REDIS_HOST: "redis"
+  CACHE_REDIS_PORT: "6379"
+  QUEUE_RABBITMQ_HOST: "rabbitmq"
+  QUEUE_RABBITMQ_PORT: "5672"
+  QUEUE_RABBITMQ_MANAGEMENT_PORT: "15672"
+  KEYCLOAK_BASE_URL: "http://keycloak:8080"
+  KEYCLOAK_PORT: "8080"
+  STORAGE_MINIO_ENDPOINT: "minio"
+  STORAGE_MINIO_PORT: "9000"
+  # TypeORM flags (from .env.example)
+  DATABASE_POSTGRES_SYNCHRONIZE: "false"
+  DATABASE_POSTGRES_LOGGING: "false"
+  DATABASE_POSTGRES_TIMEZONE: "Z"
+  # Keycloak realm / client (from .env.example)
+  KEYCLOAK_REALM: "backend"
+  KEYCLOAK_CLIENT_ID: "domestic-api"
+  # E2E test vars — required by the migration datasource validation schema
+  DATABASE_POSTGRES_TEST_E2E_HOST: "postgres"
+  DATABASE_POSTGRES_TEST_E2E_PORT: "5432"
+  DATABASE_POSTGRES_TEST_E2E_NAME: "backend_database_postgres_test_e2e"
+  DATABASE_POSTGRES_TEST_E2E_USER: "domestic"
+  DATABASE_POSTGRES_TEST_E2E_SYNCHRONIZE: "false"
+  DATABASE_POSTGRES_TEST_E2E_LOGGING: "false"
+  DATABASE_POSTGRES_TEST_E2E_TIMEZONE: "Z"

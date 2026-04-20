@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki
+  namespace: domestic
+  labels:
+    app: loki
+spec:
+  selector:
+    app: loki
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3100
+      targetPort: 3100

@@ -1,0 +1,36 @@
+# MetalLB — IP pool para rede local (L2 mode)
+#
+# ANTES DE APLICAR: ajuste o range de IPs para sua sub-rede local.
+# Exemplo: se sua rede é 192.168.1.x, use IPs livres no final do range.
+# Verifique IPs disponíveis: nmap -sn 192.168.1.0/24
+#
+# Instalação do MetalLB via minikube addon:
+#   minikube addons enable metallb
+#   minikube addons configure metallb   # define o range interativamente
+#
+# OU instale via kubectl e aplique este arquivo:
+#   kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.5/config/manifests/metallb-native.yaml
+#   kubectl wait --namespace metallb-system \
+#     --for=condition=ready pod --selector=app=metallb --timeout=90s
+#   kubectl apply -f kubernetes/metallb/metallb-config.yaml
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: domestic-local-pool
+  namespace: metallb-system
+spec:
+  # CHANGE_ME: defina um range de IPs livres na sua rede local.
+  # Esses IPs serão atribuídos aos Services do tipo LoadBalancer (ex: Ingress controller).
+  addresses:
+    - 192.168.1.200-192.168.1.210
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: domestic-l2-advertisement
+  namespace: metallb-system
+spec:
+  # Anuncia o pool via ARP/NDP — funciona em qualquer roteador doméstico sem configuração extra.
+  ipAddressPools:
+    - domestic-local-pool

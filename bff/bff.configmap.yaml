@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bff-config
+  namespace: domestic
+  labels:
+    app: bff
+data:
+  NODE_ENV: "development"
+  NODE_OPTIONS: "--max-old-space-size=512"
+  PORT: "3001"
+  # API interna — BFF chama a API via ClusterIP (não passa pelo Kong)
+  API_BASE_URL: "http://api:3000"
+  # Auth
+  KEYCLOAK_BASE_URL: "http://keycloak:8080"
+  KEYCLOAK_REALM: "backend"
+  KEYCLOAK_CLIENT_ID: "domestic-bff"
+  KEYCLOAK_PORT: "8080"
+  # Cache compartilhado com a API
+  CACHE_REDIS_HOST: "redis"
+  CACHE_REDIS_PORT: "6379"
+  # MongoDB — BFF usa para cache de dashboard e persistência local
+  MONGO_URI: "mongodb://mongo:27017/domestic-bff"

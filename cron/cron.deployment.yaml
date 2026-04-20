@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cron
+  namespace: domestic
+  labels:
+    app: cron
+spec:
+  # CronJob como Deployment: o serviço fica de pé e o @nestjs/schedule dispara
+  # os jobs internamente. Vantagem: sem cold-start a cada execução.
+  # Alternativa: usar os CronJob do Kubernetes (ver cron.k8s-jobs.yaml).
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cron
+  template:
+    metadata:
+      labels:
+        app: cron
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command: [sh, -c, "until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done"]
+        - name: wait-for-rabbitmq
+          image: busybox:1.36
+          command: [sh, -c, "until nc -z rabbitmq 5672; do echo waiting for rabbitmq; sleep 2; done"]
+        - name: wait-for-redis
+          image: busybox:1.36
+          command: [sh, -c, "until nc -z redis 6379; do echo waiting for redis; sleep 2; done"]
+      containers:
+        - name: cron
+          # Registry local Ubuntu:  192.168.1.100:5000/domestic-cron:latest
+          # Daemon minikube:        domestic-cron:local
+          image: domestic-cron:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3003
+              name: http
+          envFrom:
+            - configMapRef:
+                name: cron-config
+            - secretRef:
+                name: cron-secret
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3003
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3003
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 5
