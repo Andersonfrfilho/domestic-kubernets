@@ -9,3 +9,19 @@ data:
   rabbitmq.conf: |
     vm_memory_high_watermark.relative = 0.6
     disk_free_limit.absolute = 1GB
+
+    # OAuth2 / Keycloak SSO
+    auth_backends.1 = rabbit
+    auth_backends.2 = oauth2
+    auth_oauth2.resource_server_id = rabbitmq
+    auth_oauth2.issuer = http://keycloak.domestic.local/realms/domestic-backend
+    auth_oauth2.jwks_url = http://keycloak.domestic.local/realms/domestic-backend/protocol/openid-connect/certs
+
+    # Management UI SSO
+    management.oauth_enabled = true
+    management.oauth_client_id = rabbitmq
+    management.oauth_client_secret = rabbitmq-client-secret
+    management.oauth_provider_url = http://keycloak.domestic.local/realms/domestic-backend
+
+  enabled_plugins: |
+    [rabbitmq_management,rabbitmq_auth_backend_oauth2].

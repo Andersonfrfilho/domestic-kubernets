@@ -43,6 +43,9 @@ spec:
             - name: rabbitmq-conf
               mountPath: /etc/rabbitmq/rabbitmq.conf
               subPath: rabbitmq.conf
+            - name: rabbitmq-conf
+              mountPath: /etc/rabbitmq/enabled_plugins
+              subPath: enabled_plugins
           resources:
             requests:
               memory: "128Mi"
