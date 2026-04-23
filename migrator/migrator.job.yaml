@@ -23,8 +23,8 @@ spec:
             - until nc -z postgres 5432; do echo "waiting for postgres..."; sleep 2; done
       containers:
         - name: migrator
-          image: domestic-api:local
-          imagePullPolicy: Never
+          image: ghcr.io/andersonfrfilho/domestic-backend-api:latest
+          imagePullPolicy: Always
           command: ["npm", "run", "migration:run"]
           envFrom:
             - configMapRef:

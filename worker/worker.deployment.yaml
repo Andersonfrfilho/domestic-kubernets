@@ -31,8 +31,8 @@ spec:
         - name: worker
           # Registry local Ubuntu:  192.168.1.100:5000/domestic-worker:latest
           # Daemon minikube:        domestic-worker:local
-          image: domestic-worker:local
-          imagePullPolicy: IfNotPresent
+          image: ghcr.io/andersonfrfilho/domestic-backend-worker:latest
+          imagePullPolicy: Always
           ports:
             # Health check e Bull Board (dashboard de filas), se habilitado
             - containerPort: 3002

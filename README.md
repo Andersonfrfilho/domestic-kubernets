@@ -58,29 +58,29 @@ Utilize estes hostnames para acesso administrativo e conexão entre serviços. N
 
 ### 1. Painéis Administrativos (Web)
 
-| Serviço         | URL                                  | Usuário      | Senha             |
-| :-------------- | :----------------------------------- | :----------- | :---------------- |
-| **Keycloak**    | `http://keycloak.domestic.local`     | `domestic`   | `admin`           |
-| **RabbitMQ**    | `http://queue.domestic.local`        | `domestic`   | `backendapi123`   |
-| **MinIO**       | `http://storage.domestic.local`      | `domestic`   | `minioadmin`      |
-| **ArgoCD**      | `http://argocd.domestic.local`       | `admin`      | *(ver seção 14)*  |
-| **Kong Admin**  | `http://gateway.domestic.local:8001` | *(sem auth)* | *(sem auth)*      |
+| Serviço        | URL                                  | Usuário      | Senha            |
+| :------------- | :----------------------------------- | :----------- | :--------------- |
+| **Keycloak**   | `http://keycloak.domestic.local`     | `domestic`   | `admin`          |
+| **RabbitMQ**   | `http://queue.domestic.local`        | `domestic`   | `backendapi123`  |
+| **MinIO**      | `http://storage.domestic.local`      | `domestic`   | `minioadmin`     |
+| **ArgoCD**     | `http://argocd.domestic.local`       | `admin`      | _(ver seção 14)_ |
+| **Kong Admin** | `http://gateway.domestic.local:8001` | _(sem auth)_ | _(sem auth)_     |
 
 ### 2. Bancos de Dados e S3 (Conexão Direta)
 
 Os bancos estão expostos via `LoadBalancer`, permitindo conexão direta pelos hostnames abaixo:
 
-| Serviço        | Hostname / String de Conexão                                               | Porta |
-| :------------- | :------------------------------------------------------------------------- | :---- |
+| Serviço        | Hostname / String de Conexão                                                                | Porta |
+| :------------- | :------------------------------------------------------------------------------------------ | :---- |
 | **PostgreSQL** | `postgresql://domestic:postgres1234@postgres.domestic.local:5432/backend_database_postgres` | 5432  |
-| **MongoDB**    | `mongodb://mongo.domestic.local:27017/domestic_mongo`                      | 27017 |
-| **Redis**      | `redis://redis.domestic.local:6379/0`                                      | 6379  |
-| **MinIO (S3)** | `http://s3.domestic.local`                                                 | 9000  |
+| **MongoDB**    | `mongodb://mongo.domestic.local:27017/domestic_mongo`                                       | 27017 |
+| **Redis**      | `redis://redis.domestic.local:6379/0`                                                       | 6379  |
+| **MinIO (S3)** | `http://s3.domestic.local`                                                                  | 9000  |
 
 ### 3. Endpoints de API (Gateway)
 
-*   **Kong Proxy (HTTP):** `http://gateway.domestic.local/api/v1`
-*   **Keycloak Auth:** `http://keycloak.domestic.local/realms/domestic-backend`
+- **Kong Proxy (HTTP):** `http://gateway.domestic.local/api/v1`
+- **Keycloak Auth:** `http://keycloak.domestic.local/realms/domestic-backend`
 
 ---
 
@@ -249,35 +249,6 @@ kubectl wait --namespace ingress-nginx \
 
 # Ver o IP externo atribuído (ex: 192.168.1.200)
 kubectl get svc -n ingress-nginx ingress-nginx-controller
-```
-
-### 7. Ubuntu — registry Docker local
-
-O registry permite que o macOS faça `docker push` e o k3s faça `pull` sem precisar de internet.
-
-```bash
-# Subir o registry
-docker run -d \
-  --name domestic-registry \
-  --restart always \
-  -p 5000:5000 \
-  -v /opt/domestic-registry:/var/lib/registry \
-  registry:2
-
-# Configurar k3s para aceitar o registry inseguro (sem TLS)
-sudo mkdir -p /etc/rancher/k3s
-sudo tee /etc/rancher/k3s/registries.yaml <<EOF
-mirrors:
-  "192.168.1.100:5000":
-    endpoint:
-      - "http://192.168.1.100:5000"
-EOF
-
-# Reiniciar k3s para aplicar
-sudo systemctl restart k3s
-
-# Verificar que o registry está acessível
-curl http://192.168.1.100:5000/v2/_catalog
 ```
 
 ### 8. Ubuntu — configurar firewall (UFW)
@@ -543,12 +514,12 @@ minikube delete   # reset total — use para testar do zero
 >
 > **Exceções — quando é necessário deletar antes de reaplicar:**
 >
-> | Situação | Comando de limpeza |
-> |----------|--------------------|
-> | Mudou `storageClassName` num PVC já criado (campo imutável) | `kubectl delete pvc <nome> -n domestic` |
-> | Mudou `volumeClaimTemplates` num StatefulSet (imutável) | `kubectl delete statefulset <nome> -n domestic` |
-> | Quer banco de dados limpo (zero dados) | `minikube delete` |
-> | Pod preso em `CrashLoopBackOff` após mudança de config | `kubectl delete pod <nome> -n domestic` |
+> | Situação                                                    | Comando de limpeza                              |
+> | ----------------------------------------------------------- | ----------------------------------------------- |
+> | Mudou `storageClassName` num PVC já criado (campo imutável) | `kubectl delete pvc <nome> -n domestic`         |
+> | Mudou `volumeClaimTemplates` num StatefulSet (imutável)     | `kubectl delete statefulset <nome> -n domestic` |
+> | Quer banco de dados limpo (zero dados)                      | `minikube delete`                               |
+> | Pod preso em `CrashLoopBackOff` após mudança de config      | `kubectl delete pod <nome> -n domestic`         |
 >
 > O Job do migrator é tratado automaticamente pelo script (`delete` + `apply` a cada execução).
 
@@ -1079,20 +1050,20 @@ kubectl logs -f deployment/keycloak -n domestic
 
 ### Dicas Úteis de Debug
 
-*   **Logs de Migrations (API):**
-    ```bash
-    kubectl logs deployment/api -n domestic -c migrate
-    ```
-*   **Logs de múltiplos pods (por label):**
-    ```bash
-    kubectl logs -f -n domestic -l 'app in (api, bff, worker)' --tail=50
-    ```
-*   **Verificar erros de subida (Eventos):**
-    ```bash
-    kubectl get events -n domestic --sort-by='.lastTimestamp'
-    ```
-*   **K9s (Visual e Interativo):**
-    A forma mais fácil de ver logs é usando o **k9s**. Digite `k9s -n domestic`, selecione o pod e aperte `l`.
+- **Logs de Migrations (API):**
+  ```bash
+  kubectl logs deployment/api -n domestic -c migrate
+  ```
+- **Logs de múltiplos pods (por label):**
+  ```bash
+  kubectl logs -f -n domestic -l 'app in (api, bff, worker)' --tail=50
+  ```
+- **Verificar erros de subida (Eventos):**
+  ```bash
+  kubectl get events -n domestic --sort-by='.lastTimestamp'
+  ```
+- **K9s (Visual e Interativo):**
+  A forma mais fácil de ver logs é usando o **k9s**. Digite `k9s -n domestic`, selecione o pod e aperte `l`.
 
 ---
 

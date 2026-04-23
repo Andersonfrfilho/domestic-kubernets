@@ -17,11 +17,11 @@ spec:
   project: domestic
 
   sources:
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: postgres-keycloak
 
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: keycloak
 

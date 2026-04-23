@@ -48,7 +48,7 @@ info "Criando namespace argocd..."
 kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 
 info "Instalando ArgoCD (stable)..."
-kubectl apply -n argocd \
+kubectl apply --server-side --force-conflicts -n argocd \
   -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 info "Aguardando pods do ArgoCD ficarem prontos (pode demorar 2-3 min)..."

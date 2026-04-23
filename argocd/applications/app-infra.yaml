@@ -20,23 +20,23 @@ spec:
 
   # Multi-source: cada diretório é uma source separada (ArgoCD v2.6+)
   sources:
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: postgres
 
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: mongo
 
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: redis
 
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: rabbitmq
 
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: minio
 

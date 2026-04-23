@@ -16,7 +16,7 @@ spec:
 
   # Repositórios git permitidos para este projeto
   sourceRepos:
-    - "CHANGE_ME_GIT_REPO_URL"
+    - "https://github.com/Andersonfrfilho/domestic-kubernets"
 
   # Clusters e namespaces onde este projeto pode fazer deploy
   destinations:

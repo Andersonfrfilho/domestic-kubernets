@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(sudo cp *)",
+      "Bash(sudo chown *)",
+      "Bash(kubectl get *)",
+      "Bash(sudo systemctl *)",
+      "Bash(ip addr *)",
+      "Bash(kubectl apply *)",
+      "Bash(kubectl describe *)"
+    ]
+  }
+}

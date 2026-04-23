@@ -17,19 +17,19 @@ spec:
   project: domestic
 
   sources:
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: observability/prometheus
 
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: observability/grafana
 
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: observability/loki
 
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: observability/jaeger
 

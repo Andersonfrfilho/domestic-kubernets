@@ -18,31 +18,31 @@ spec:
   project: domestic
 
   sources:
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: migrator
 
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: api
 
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: kong
 
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: bff
 
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: worker
 
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: cron
 
-    - repoURL: "CHANGE_ME_GIT_REPO_URL"
+    - repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
       targetRevision: HEAD
       path: ingress
 
