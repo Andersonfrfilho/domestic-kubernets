@@ -6,7 +6,7 @@ metadata:
   labels:
     app: api
 data:
-  NODE_ENV: "development"
+  NODE_ENV: "production"
   NODE_OPTIONS: "--max-old-space-size=512"
   PORT: "3000"
   DATABASE_POSTGRES_HOST: "postgres"

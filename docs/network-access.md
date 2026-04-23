@@ -2,12 +2,14 @@
 
 ## Como funciona
 
-O dnsmasq na máquina host resolve `*.domestic.local → 192.168.1.200` (IP do Ingress Controller via MetalLB).
+O dnsmasq na máquina host resolve `*.domestic.local → 192.168.3.203` (IP do Ingress Controller via MetalLB).
 Outros dispositivos na rede precisam usar a máquina host como DNS primário para acessar os serviços.
 
 **IPs da máquina host:**
 - `192.168.3.60` (Ethernet)
 - `192.168.3.8` (Wi-Fi)
+
+**IP do Ingress Controller (MetalLB):** `192.168.3.203`
 
 ---
 
@@ -55,8 +57,50 @@ Painel de Controle → Central de Rede → Adaptador → Propriedades → IPv4:
 - **DNS alternativo:** `8.8.8.8`
 
 ### macOS
-Preferências do Sistema → Rede → Avançado → DNS:
-- Adicionar `192.168.3.60` como primeiro servidor
+
+> **Atenção:** macOS intercepta domínios `.local` via mDNS/Bonjour **antes** de consultar o DNS configurado.
+> É necessário criar um resolver específico para contornar esse comportamento.
+
+```bash
+# 1. Configurar DNS nas preferências de rede:
+networksetup -setdnsservers Wi-Fi 192.168.3.60 8.8.8.8
+# ou para Ethernet:
+networksetup -setdnsservers Ethernet 192.168.3.60 8.8.8.8
+
+# 2. Criar resolver para bypassar o mDNS no domínio .local
+#    (IMPORTANTE: não usar indentação dentro do heredoc)
+sudo mkdir -p /etc/resolver
+sudo tee /etc/resolver/local << 'EOF'
+nameserver 192.168.3.60
+port 53
+EOF
+
+# 3. Limpar cache DNS:
+sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder
+```
+
+#### Diagnóstico (rodar no Mac para verificar)
+
+```bash
+# Ver qual DNS está configurado
+networksetup -getdnsservers Wi-Fi
+networksetup -getdnsservers Ethernet
+
+# Ver se o resolver foi criado
+cat /etc/resolver/local
+
+# Testar resolução DNS apontando direto para o host Ubuntu
+nslookup argocd.domestic.local 192.168.3.60
+
+# Ver o que o Mac está resolvendo (deve retornar 192.168.3.203)
+dscacheutil -q host -a name argocd.domestic.local
+
+# Testar HTTP diretamente pelo IP (sem DNS) — confirma que o serviço responde
+curl -s -o /dev/null -w "%{http_code}" http://192.168.3.203 -H "Host: argocd.domestic.local"
+# Esperado: 200
+```
+
+Se `dscacheutil` retornar `192.168.3.203`, o DNS está funcionando e o browser deve abrir normalmente.
 
 ### Linux
 ```bash

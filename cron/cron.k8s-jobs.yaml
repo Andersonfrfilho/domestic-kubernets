@@ -36,13 +36,15 @@ spec:
             job-type: maintenance
         spec:
           restartPolicy: OnFailure
+          imagePullSecrets:
+            - name: ghcr-secret
           initContainers:
             - name: wait-for-postgres
               image: busybox:1.36
               command: [sh, -c, "until nc -z postgres 5432; do sleep 2; done"]
           containers:
             - name: cron
-              image: 192.168.1.100:5000/domestic-cron:latest
+              image: ghcr.io/andersonfrfilho/domestic-backend-cron:main
               imagePullPolicy: Always
               # Comando específico — o container sabe qual job executar pelo argumento
               command: ["node", "dist/jobs/expire-service-requests.js"]
@@ -83,6 +85,8 @@ spec:
             job-type: notification
         spec:
           restartPolicy: OnFailure
+          imagePullSecrets:
+            - name: ghcr-secret
           initContainers:
             - name: wait-for-postgres
               image: busybox:1.36
@@ -92,7 +96,7 @@ spec:
               command: [sh, -c, "until nc -z rabbitmq 5672; do sleep 2; done"]
           containers:
             - name: cron
-              image: 192.168.1.100:5000/domestic-cron:latest
+              image: ghcr.io/andersonfrfilho/domestic-backend-cron:main
               imagePullPolicy: Always
               command: ["node", "dist/jobs/daily-provider-summary.js"]
               envFrom:
@@ -132,13 +136,15 @@ spec:
             job-type: maintenance
         spec:
           restartPolicy: OnFailure
+          imagePullSecrets:
+            - name: ghcr-secret
           initContainers:
             - name: wait-for-redis
               image: busybox:1.36
               command: [sh, -c, "until nc -z redis 6379; do sleep 2; done"]
           containers:
             - name: cron
-              image: 192.168.1.100:5000/domestic-cron:latest
+              image: ghcr.io/andersonfrfilho/domestic-backend-cron:main
               imagePullPolicy: Always
               command: ["node", "dist/jobs/cleanup-expired-tokens.js"]
               envFrom:
