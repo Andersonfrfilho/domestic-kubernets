@@ -58,13 +58,14 @@ Utilize estes hostnames para acesso administrativo e conexão entre serviços. N
 
 ### 1. Painéis Administrativos (Web)
 
-| Serviço        | URL                                  | Usuário      | Senha            |
-| :------------- | :----------------------------------- | :----------- | :--------------- |
-| **Keycloak**   | `http://keycloak.domestic.local`     | `domestic`   | `admin`          |
-| **RabbitMQ**   | `http://queue.domestic.local`        | `domestic`   | `backendapi123`  |
-| **MinIO**      | `http://storage.domestic.local`      | `domestic`   | `minioadmin`     |
-| **ArgoCD**     | `http://argocd.domestic.local`       | `admin`      | _(ver seção 14)_ |
-| **Kong Admin** | `http://gateway.domestic.local:8001` | _(sem auth)_ | _(sem auth)_     |
+| Serviço        | URL                                                                    | Usuário      | Senha            |
+| :------------- | :--------------------------------------------------------------------- | :----------- | :--------------- |
+| **Keycloak**   | [keycloak.domestic.local](http://keycloak.domestic.local)              | `domestic`   | `admin`          |
+| **RabbitMQ**   | [queue.domestic.local](http://queue.domestic.local)                    | `domestic`   | `backendapi123`  |
+| **MinIO**      | [storage.domestic.local](http://storage.domestic.local)                | `domestic`   | `minioadmin`     |
+| **ArgoCD**     | [argocd.domestic.local](http://argocd.domestic.local)                  | `admin`      | _(ver seção 14)_ |
+| **Grafana**    | [grafana.domestic.local](http://grafana.domestic.local)                | `admin`      | _(ver grafana secret)_ |
+| **Kong Admin** | [gateway.domestic.local:8001](http://gateway.domestic.local:8001)      | _(sem auth)_ | _(sem auth)_     |
 
 ### 2. Bancos de Dados e S3 (Conexão Direta)
 
@@ -965,21 +966,22 @@ kubectl logs job/backup-pg-test -n domestic -f
 
 ### Via Ingress (rede local — recomendado)
 
-| URL                                         | Serviço    | Descrição                         |
-| ------------------------------------------- | ---------- | --------------------------------- |
-| `http://gateway.domestic.local`             | Kong       | **Entry point de API — use este** |
-| `http://keycloak.domestic.local`            | Keycloak   | Admin console e login             |
-| `http://api.domestic.local`                 | API        | Acesso direto (bypassa Kong)      |
-| `http://bff.domestic.local`                 | BFF        | Acesso direto (bypassa Kong)      |
-| `http://worker.domestic.local/health`       | Worker     | Health check                      |
-| `http://worker.domestic.local/admin/queues` | Worker     | Bull Board — filas                |
-| `http://cron.domestic.local/health`         | Cron       | Health check                      |
-| `http://cron.domestic.local/jobs`           | Cron       | Trigger manual de jobs            |
-| `http://storage.domestic.local`             | MinIO      | Console de objetos                |
-| `http://queue.domestic.local`               | RabbitMQ   | Management UI                     |
-| `http://grafana.domestic.local`             | Grafana    | Dashboards                        |
-| `http://metrics.domestic.local`             | Prometheus | Métricas                          |
-| `http://tracing.domestic.local`             | Jaeger     | Traces                            |
+| URL                                                                                           | Serviço    | Descrição                         |
+| --------------------------------------------------------------------------------------------- | ---------- | --------------------------------- |
+| [gateway.domestic.local](http://gateway.domestic.local)                                       | Kong       | **Entry point de API — use este** |
+| [keycloak.domestic.local](http://keycloak.domestic.local)                                     | Keycloak   | Admin console e login             |
+| [api.domestic.local](http://api.domestic.local)                                               | API        | Acesso direto (bypassa Kong)      |
+| [bff.domestic.local](http://bff.domestic.local)                                               | BFF        | Acesso direto (bypassa Kong)      |
+| [worker.domestic.local/health](http://worker.domestic.local/health)                           | Worker     | Health check                      |
+| [worker.domestic.local/admin/queues](http://worker.domestic.local/admin/queues)               | Worker     | Bull Board — filas                |
+| [cron.domestic.local/health](http://cron.domestic.local/health)                               | Cron       | Health check                      |
+| [cron.domestic.local/jobs](http://cron.domestic.local/jobs)                                   | Cron       | Trigger manual de jobs            |
+| [storage.domestic.local](http://storage.domestic.local)                                       | MinIO      | Console de objetos                |
+| [queue.domestic.local](http://queue.domestic.local)                                           | RabbitMQ   | Management UI                     |
+| [grafana.domestic.local](http://grafana.domestic.local)                                       | Grafana    | Dashboards                        |
+| [metrics.domestic.local](http://metrics.domestic.local)                                       | Prometheus | Métricas                          |
+| [tracing.domestic.local](http://tracing.domestic.local)                                       | Jaeger     | Traces                            |
+| [argocd.domestic.local](http://argocd.domestic.local)                                         | ArgoCD     | GitOps UI                         |
 
 ### Via NodePort (fallback / debug sem Ingress)
 
