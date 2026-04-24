@@ -1,0 +1,49 @@
+_format_version: "3.0"
+_transform: true
+
+# Consumer que representa qualquer usuário autenticado via Keycloak.
+# O plugin JWT mapeia o claim `iss` do token para este consumer.
+consumers:
+  - username: keycloak-user
+    jwt_secrets:
+      - key: "http://keycloak.domestic.local/realms/domestic"
+        algorithm: RS256
+        rsa_public_key: |
+          -----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyBOEiVWmDnOOOxWLcZgZ
+          u0Q93SgujouWe3IG8pUfFsTklwyBiNB90L2GnQ7IOWYgipnZ9WAcsT9ynKaSn6CS
+          YbewKb/kv5RA2KrZSdGCfIZXhcl74IdA+F7CWaGR112ms7rwDi++Kmoumy+9E6Fj
+          L1dXXzdxD1B5J8J/JFq52TWDMKyCCn0dk7KeMhZVEwlTJ98pQ9gO8gC2aKEV/L5v
+          6XFZA/fS7ctrTydN0Y+St21c8HxD7LEv7V0WZwMsNaLFliJ36f5Ku2S8w5C8y2Dt
+          7q0vtmEIwQ4TLmyYd8nqtJwROKYW2kyW+c7ht9VW43XACbS6MKzjAeu9UapN1kpz
+          XQIDAQAB
+          -----END PUBLIC KEY-----
+
+services:
+  - name: api-service
+    url: http://api:3000
+    plugins:
+      - name: jwt
+        config:
+          key_claim_name: iss
+          claims_to_verify:
+            - exp
+    routes:
+      - name: api-route
+        paths:
+          - /api
+        strip_path: true
+
+  - name: bff-service
+    url: http://bff:3001
+    plugins:
+      - name: jwt
+        config:
+          key_claim_name: iss
+          claims_to_verify:
+            - exp
+    routes:
+      - name: bff-route
+        paths:
+          - /bff
+        strip_path: true
