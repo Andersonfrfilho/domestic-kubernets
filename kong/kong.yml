@@ -6,7 +6,7 @@ _transform: true
 consumers:
   - username: keycloak-user
     jwt_secrets:
-      - key: "http://keycloak.domestic.local:8080/realms/domestic"
+      - key: "http://keycloak.domestic.local/realms/domestic"
         algorithm: RS256
         rsa_public_key: |
           -----BEGIN PUBLIC KEY-----
@@ -18,6 +18,24 @@ consumers:
           7q0vtmEIwQ4TLmyYd8nqtJwROKYW2kyW+c7ht9VW43XACbS6MKzjAeu9UapN1kpz
           XQIDAQAB
           -----END PUBLIC KEY-----
+
+plugins:
+  # Faz Kong enviar Host: keycloak.domestic.local ao proxiar para auth e account.
+  # Sem isso, Keycloak usa "keycloak:8080" como issuer nos tokens gerados
+  # internamente — o que não bate com o consumer key acima.
+  - name: request-transformer
+    service: auth-service
+    config:
+      replace:
+        headers:
+          - "Host: keycloak.domestic.local"
+
+  - name: request-transformer
+    service: account-service
+    config:
+      replace:
+        headers:
+          - "Host: keycloak.domestic.local"
 
 services:
   # ── Auth (sem JWT) ────────────────────────────────────────────────────────
@@ -39,8 +57,14 @@ services:
 
   # ── Account / password reset (sem JWT) ───────────────────────────────────
   # Keycloak envia e-mail com link de reset; mobile abre o link no browser.
-  # POST /account/forgot-password   → inicia fluxo de reset por e-mail
-  # (Keycloak redireciona internamente para login-actions/reset-credentials)
+  #
+  # Fluxo de reset de senha:
+  #   1. Mobile POST /auth/forgot-password  { "email": "..." }  (via NestJS API)
+  #   2. API chama Admin REST → execute-actions-email → Keycloak envia e-mail
+  #   3. Link no e-mail → browser abre keycloak.domestic.local/... → usuário redefine
+  #
+  # Ou direto no browser:
+  #   GET /account/login-actions/reset-credentials?client_id=domestic-bff
   - name: account-service
     url: http://keycloak:8080/realms/domestic
     routes:

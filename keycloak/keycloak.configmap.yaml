@@ -8,7 +8,7 @@ metadata:
 data:
   KC_DB: "postgres"
   KC_DB_URL: "jdbc:postgresql://postgres-keycloak:5432/domestic_keycloak"
-  KC_HOSTNAME: "keycloak.domestic.local"
+  KC_HOSTNAME_URL: "http://keycloak.domestic.local"
   KC_HOSTNAME_STRICT: "false"
   KC_HOSTNAME_STRICT_HTTPS: "false"
   KC_HTTP_ENABLED: "true"
