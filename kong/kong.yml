@@ -6,7 +6,7 @@ _transform: true
 consumers:
   - username: keycloak-user
     jwt_secrets:
-      - key: "http://keycloak.domestic.local/realms/domestic"
+      - key: "http://keycloak.domestic.local:8080/realms/domestic"
         algorithm: RS256
         rsa_public_key: |
           -----BEGIN PUBLIC KEY-----
@@ -20,6 +20,36 @@ consumers:
           -----END PUBLIC KEY-----
 
 services:
+  # ── Auth (sem JWT) ────────────────────────────────────────────────────────
+  # Mobile usa este prefixo para tudo relacionado a autenticação.
+  # Internamente proxy para os endpoints OIDC do Keycloak.
+  #
+  # POST /auth/token        → login (grant_type=password ou authorization_code)
+  # POST /auth/token        → refresh (grant_type=refresh_token)
+  # POST /auth/logout       → logout (revoga refresh_token)
+  # GET  /auth/certs        → JWKs (chave pública do realm)
+  # GET  /auth/userinfo     → dados do usuário autenticado
+  - name: auth-service
+    url: http://keycloak:8080/realms/domestic/protocol/openid-connect
+    routes:
+      - name: auth-route
+        paths:
+          - /auth
+        strip_path: true
+
+  # ── Account / password reset (sem JWT) ───────────────────────────────────
+  # Keycloak envia e-mail com link de reset; mobile abre o link no browser.
+  # POST /account/forgot-password   → inicia fluxo de reset por e-mail
+  # (Keycloak redireciona internamente para login-actions/reset-credentials)
+  - name: account-service
+    url: http://keycloak:8080/realms/domestic
+    routes:
+      - name: account-route
+        paths:
+          - /account
+        strip_path: true
+
+  # ── API REST (protegida por JWT) ──────────────────────────────────────────
   - name: api-service
     url: http://api:3000
     plugins:
@@ -34,6 +64,7 @@ services:
           - /api
         strip_path: true
 
+  # ── BFF — Backend for Frontend (protegido por JWT) ────────────────────────
   - name: bff-service
     url: http://bff:3001
     plugins:
