@@ -14,7 +14,6 @@ data:
     auth_backends.1 = rabbit
     auth_backends.2 = oauth2
     auth_oauth2.resource_server_id = rabbitmq
-    auth_oauth2.issuer = http://keycloak.domestic.local/realms/domestic-backend
     auth_oauth2.jwks_url = http://keycloak.domestic.local/realms/domestic-backend/protocol/openid-connect/certs
 
     # Management UI SSO
