@@ -73,15 +73,45 @@ Os bancos estão expostos via `LoadBalancer`, permitindo conexão direta pelos h
 
 | Serviço        | Hostname / String de Conexão                                                                | Porta |
 | :------------- | :------------------------------------------------------------------------------------------ | :---- |
-| **PostgreSQL** | `postgresql://domestic:postgres1234@postgres.domestic.local:5432/backend_database_postgres` | 5432  |
+| **PostgreSQL** | `postgresql://domestic:postgres1234@postgres.domestic.local:5432/domestic_postgres` | 5432  |
 | **MongoDB**    | `mongodb://mongo.domestic.local:27017/domestic_mongo`                                       | 27017 |
 | **Redis**      | `redis://redis.domestic.local:6379/0`                                                       | 6379  |
 | **MinIO (S3)** | `http://s3.domestic.local`                                                                  | 9000  |
 
 ### 3. Endpoints de API (Gateway)
 
-- **Kong Proxy (HTTP):** `http://gateway.domestic.local/api/v1`
-- **Keycloak Auth:** `http://keycloak.domestic.local/realms/domestic-backend`
+Todas as chamadas de produção passam por `http://gateway.domestic.local` (Kong).  
+O Kong faz strip do prefixo antes de encaminhar ao upstream — o path `/api/users` chega na API como `/users`.
+
+| Rota Kong (entrada)              | Upstream (interno)     | Serviço | `strip_path` |
+| :------------------------------- | :--------------------- | :------ | :----------- |
+| `GET/POST ... /api/<path>`        | `http://api:3000/<path>`  | API REST (NestJS)  | ✅ |
+| `GET/POST ... /bff/<path>`        | `http://bff:3001/<path>`  | BFF (NestJS)       | ✅ |
+
+**Exemplos de chamada via Kong:**
+
+```bash
+# API — listar usuários
+curl http://gateway.domestic.local/api/users
+
+# BFF — endpoint agregado
+curl http://gateway.domestic.local/bff/home
+
+# Com token JWT (após login no Keycloak)
+TOKEN=$(curl -s -X POST http://keycloak.domestic.local/realms/domestic/protocol/openid-connect/token \
+  -d "client_id=domestic-bff&grant_type=password&username=<user>&password=<pass>" | jq -r .access_token)
+
+curl -H "Authorization: Bearer $TOKEN" http://gateway.domestic.local/api/users
+```
+
+**Acesso direto (dev / bypass Kong):**
+
+| Serviço | URL direta                          |
+| :------ | :---------------------------------- |
+| API     | `http://api.domestic.local/`        |
+| BFF     | `http://bff.domestic.local/`        |
+
+- **Keycloak Auth:** `http://keycloak.domestic.local/realms/domestic`
 
 ---
 
