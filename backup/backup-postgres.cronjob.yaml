@@ -21,7 +21,7 @@ data:
   BACKUP_RETENTION_DAYS: "30"
   POSTGRES_HOST: "postgres"
   POSTGRES_PORT: "5432"
-  POSTGRES_DB: "backend_database_postgres"
+  POSTGRES_DB: "domestic_postgres"
 ---
 apiVersion: batch/v1
 kind: CronJob

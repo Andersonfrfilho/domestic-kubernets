@@ -12,7 +12,7 @@ data:
   # Banco principal
   DATABASE_POSTGRES_HOST: "postgres"
   DATABASE_POSTGRES_PORT: "5432"
-  DATABASE_POSTGRES_NAME: "backend_database_postgres"
+  DATABASE_POSTGRES_NAME: "domestic_postgres"
   DATABASE_POSTGRES_SYNCHRONIZE: "false"
   DATABASE_POSTGRES_LOGGING: "false"
   DATABASE_POSTGRES_TIMEZONE: "Z"
