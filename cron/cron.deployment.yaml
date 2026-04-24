@@ -34,7 +34,7 @@ spec:
         - name: cron
           # Registry local Ubuntu:  192.168.1.100:5000/domestic-cron:latest
           # Daemon minikube:        domestic-cron:local
-          image: ghcr.io/andersonfrfilho/domestic-cron:main
+          image: ghcr.io/andersonfrfilho/domestic-backend-cron:main
           imagePullPolicy: Always
           ports:
             - containerPort: 3003

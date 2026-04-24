@@ -37,7 +37,7 @@ spec:
           image: busybox:1.36
           command: [sh, -c, "until nc -z keycloak 8080; do echo waiting for keycloak; sleep 2; done"]
         - name: migrate
-          image: ghcr.io/andersonfrfilho/domestic-api:main
+          image: ghcr.io/andersonfrfilho/domestic-backend-api:main
           imagePullPolicy: Always
           command: ["npm", "run", "migration:run"]
           envFrom:
@@ -47,7 +47,7 @@ spec:
                 name: api-secret
       containers:
         - name: api
-          image: ghcr.io/andersonfrfilho/domestic-api:main
+          image: ghcr.io/andersonfrfilho/domestic-backend-api:main
           imagePullPolicy: Always
           ports:
             - containerPort: 3000

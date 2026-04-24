@@ -31,7 +31,7 @@ spec:
         - name: bff
           # Registry local Ubuntu:  192.168.1.100:5000/domestic-bff:latest
           # Daemon minikube:        domestic-bff:local
-          image: ghcr.io/andersonfrfilho/domestic-bff:main
+          image: ghcr.io/andersonfrfilho/domestic-backend-bff:main
           imagePullPolicy: Always
           ports:
             - containerPort: 3001
