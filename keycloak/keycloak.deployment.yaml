@@ -81,7 +81,7 @@ spec:
             timeoutSeconds: 5
       volumes:
         # Created via: kubectl create configmap keycloak-realm-config \
-        #   --from-file=domestic-backend-realm.json=./keycloak-config/domestic-backend-realm.json \
+        #   --from-file=domestic-realm.json=./keycloak-config/domestic-realm.json \
         #   -n domestic
         - name: realm-import
           configMap:

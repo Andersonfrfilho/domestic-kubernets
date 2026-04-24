@@ -6,10 +6,10 @@ metadata:
   labels:
     app: keycloak
 data:
-  domestic-backend-realm.json: |
+  domestic-realm.json: |
     {
       "id": "64220c6e-ec6b-4f1d-8b52-638a096180fa",
-      "realm": "domestic-backend",
+      "realm": "domestic",
       "displayName": "Domestic Backend",
       "notBefore": 0,
       "defaultSignatureAlgorithm": "RS256",
@@ -112,7 +112,7 @@ data:
           },
           {
             "id": "379587f7-53c8-4aff-970a-b516f95bbba2",
-            "name": "default-roles-domestic-backend",
+            "name": "default-roles-domestic",
             "description": "${role_default-roles}",
             "composite": true,
             "composites": {
@@ -196,7 +196,7 @@ data:
           }
         ],
         "client": {
-          "domestic-backend-cron": [],
+          "domestic-cron": [],
           "realm-management": [
             {
               "id": "fa59a3dd-e3f3-4a65-9a96-4b62e8fcbaae",
@@ -426,11 +426,11 @@ data:
             }
           ],
           "rabbitmq": [],
-          "domestic-backend-worker": [],
+          "domestic-worker": [],
           "grafana": [],
           "admin-cli": [],
-          "domestic-backend-bff": [],
-          "domestic-backend-kong": [],
+          "domestic-bff": [],
+          "domestic-kong": [],
           "account": [
             {
               "id": "5bf75e4e-b46a-47d5-b1d0-9ce571e2e0c0",
@@ -593,7 +593,7 @@ data:
       ],
       "defaultRole": {
         "id": "379587f7-53c8-4aff-970a-b516f95bbba2",
-        "name": "default-roles-domestic-backend",
+        "name": "default-roles-domestic",
         "description": "${role_default-roles}",
         "composite": true,
         "clientRole": false,
@@ -654,18 +654,18 @@ data:
           "disableableCredentialTypes": [],
           "requiredActions": [],
           "realmRoles": [
-            "default-roles-domestic-backend"
+            "default-roles-domestic"
           ],
           "notBefore": 0,
           "groups": []
         },
         {
           "id": "72112993-2fbd-4f2c-bf9b-c501e4ff3c73",
-          "username": "service-account-domestic-backend-bff",
+          "username": "service-account-domestic-bff",
           "emailVerified": false,
           "enabled": true,
           "totp": false,
-          "serviceAccountClientId": "domestic-backend-bff",
+          "serviceAccountClientId": "domestic-bff",
           "disableableCredentialTypes": [],
           "requiredActions": [],
           "realmRoles": [
@@ -681,11 +681,11 @@ data:
         },
         {
           "id": "a4292059-9180-496f-8e9f-467c210f77bd",
-          "username": "service-account-domestic-backend-cron",
+          "username": "service-account-domestic-cron",
           "emailVerified": false,
           "enabled": true,
           "totp": false,
-          "serviceAccountClientId": "domestic-backend-cron",
+          "serviceAccountClientId": "domestic-cron",
           "disableableCredentialTypes": [],
           "requiredActions": [],
           "realmRoles": [
@@ -698,11 +698,11 @@ data:
         },
         {
           "id": "3161c021-4865-4fdb-96f6-52824b232b2b",
-          "username": "service-account-domestic-backend-kong",
+          "username": "service-account-domestic-kong",
           "emailVerified": false,
           "enabled": true,
           "totp": false,
-          "serviceAccountClientId": "domestic-backend-kong",
+          "serviceAccountClientId": "domestic-kong",
           "disableableCredentialTypes": [],
           "requiredActions": [],
           "realmRoles": [
@@ -717,11 +717,11 @@ data:
         },
         {
           "id": "fc537059-5b02-44ad-a5bd-9c0146b87ded",
-          "username": "service-account-domestic-backend-worker",
+          "username": "service-account-domestic-worker",
           "emailVerified": false,
           "enabled": true,
           "totp": false,
-          "serviceAccountClientId": "domestic-backend-worker",
+          "serviceAccountClientId": "domestic-worker",
           "disableableCredentialTypes": [],
           "requiredActions": [],
           "realmRoles": [
@@ -803,13 +803,13 @@ data:
           "clientId": "account",
           "name": "${client_account}",
           "rootUrl": "${authBaseUrl}",
-          "baseUrl": "/realms/domestic-backend/account/",
+          "baseUrl": "/realms/domestic/account/",
           "surrogateAuthRequired": false,
           "enabled": true,
           "alwaysDisplayInConsole": false,
           "clientAuthenticatorType": "client-secret",
           "redirectUris": [
-            "/realms/domestic-backend/account/*"
+            "/realms/domestic/account/*"
           ],
           "webOrigins": [],
           "notBefore": 0,
@@ -836,13 +836,13 @@ data:
           "clientId": "account-console",
           "name": "${client_account-console}",
           "rootUrl": "${authBaseUrl}",
-          "baseUrl": "/realms/domestic-backend/account/",
+          "baseUrl": "/realms/domestic/account/",
           "surrogateAuthRequired": false,
           "enabled": true,
           "alwaysDisplayInConsole": false,
           "clientAuthenticatorType": "client-secret",
           "redirectUris": [
-            "/realms/domestic-backend/account/*"
+            "/realms/domestic/account/*"
           ],
           "webOrigins": [],
           "notBefore": 0,
@@ -1135,7 +1135,7 @@ data:
         },
         {
           "id": "0408cb57-a1f8-4d81-a500-6c6be89b7460",
-          "clientId": "domestic-backend-bff",
+          "clientId": "domestic-bff",
           "name": "Domestic Backend BFF",
           "description": "Backend For Frontend \u2014 valida tokens de usu\u00e1rio e encaminha chamadas B2B ao backend-api",
           "surrogateAuthRequired": false,
@@ -1205,7 +1205,7 @@ data:
         },
         {
           "id": "1acdfeeb-32dd-4388-9632-7bc5d8baeb7f",
-          "clientId": "domestic-backend-cron",
+          "clientId": "domestic-cron",
           "name": "Domestic Backend Cron",
           "description": "Cron job service client",
           "surrogateAuthRequired": false,
@@ -1247,7 +1247,7 @@ data:
         },
         {
           "id": "967292a7-5b15-49e3-9601-d2cc76c000ec",
-          "clientId": "domestic-backend-kong",
+          "clientId": "domestic-kong",
           "name": "Domestic Backend Kong",
           "description": "Kong API Gateway \u2014 service account para autenticar chamadas upstream ao BFF e API",
           "surrogateAuthRequired": false,
@@ -1301,7 +1301,7 @@ data:
         },
         {
           "id": "da6bb1df-9539-4fd4-97ab-91247f30fb08",
-          "clientId": "domestic-backend-worker",
+          "clientId": "domestic-worker",
           "name": "Domestic Backend Worker",
           "description": "Worker service client for background jobs",
           "surrogateAuthRequired": false,
@@ -1536,13 +1536,13 @@ data:
           "clientId": "security-admin-console",
           "name": "${client_security-admin-console}",
           "rootUrl": "${authAdminUrl}",
-          "baseUrl": "/admin/domestic-backend/console/",
+          "baseUrl": "/admin/domestic/console/",
           "surrogateAuthRequired": false,
           "enabled": true,
           "alwaysDisplayInConsole": false,
           "clientAuthenticatorType": "client-secret",
           "redirectUris": [
-            "/admin/domestic-backend/console/*"
+            "/admin/domestic/console/*"
           ],
           "webOrigins": [
             "+"

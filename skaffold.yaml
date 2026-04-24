@@ -6,7 +6,7 @@ metadata:
 build:
   artifacts:
     - image: domestic-api
-      context: ../domestic-backend-api
+      context: ../domestic-api
       docker:
         dockerfile: Dockerfile.dev
       # Sincroniza arquivos TypeScript sem rebuild completo — hot-reload via NestJS watch.
@@ -51,7 +51,7 @@ profiles:
         useDockerCLI: true   # usa o daemon do minikube via eval $(minikube docker-env)
       artifacts:
         - image: domestic-api:local
-          context: ../domestic-backend-api
+          context: ../domestic-api
           docker:
             dockerfile: Dockerfile.dev
           sync:
@@ -67,7 +67,7 @@ profiles:
         push: true           # faz push para o registry depois do build
       artifacts:
         - image: 192.168.1.100:5000/domestic-api
-          context: ../domestic-backend-api
+          context: ../domestic-api
           docker:
             dockerfile: Dockerfile.dev
           sync:
@@ -93,7 +93,7 @@ profiles:
         push: true
       artifacts:
         - image: 192.168.1.100:5000/domestic-api
-          context: ../domestic-backend-api
+          context: ../domestic-api
           docker:
             dockerfile: Dockerfile.dev
           sync:

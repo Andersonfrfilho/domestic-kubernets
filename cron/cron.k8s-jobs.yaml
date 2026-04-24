@@ -44,7 +44,7 @@ spec:
               command: [sh, -c, "until nc -z postgres 5432; do sleep 2; done"]
           containers:
             - name: cron
-              image: ghcr.io/andersonfrfilho/domestic-backend-cron:main
+              image: ghcr.io/andersonfrfilho/domestic-cron:main
               imagePullPolicy: Always
               # Comando específico — o container sabe qual job executar pelo argumento
               command: ["node", "dist/jobs/expire-service-requests.js"]
@@ -96,7 +96,7 @@ spec:
               command: [sh, -c, "until nc -z rabbitmq 5672; do sleep 2; done"]
           containers:
             - name: cron
-              image: ghcr.io/andersonfrfilho/domestic-backend-cron:main
+              image: ghcr.io/andersonfrfilho/domestic-cron:main
               imagePullPolicy: Always
               command: ["node", "dist/jobs/daily-provider-summary.js"]
               envFrom:
@@ -144,7 +144,7 @@ spec:
               command: [sh, -c, "until nc -z redis 6379; do sleep 2; done"]
           containers:
             - name: cron
-              image: ghcr.io/andersonfrfilho/domestic-backend-cron:main
+              image: ghcr.io/andersonfrfilho/domestic-cron:main
               imagePullPolicy: Always
               command: ["node", "dist/jobs/cleanup-expired-tokens.js"]
               envFrom:

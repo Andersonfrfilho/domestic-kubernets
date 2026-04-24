@@ -21,7 +21,7 @@ spec:
           args:
             - --provider=keycloak-oidc
             - --client-id=kong-manager
-            - --oidc-issuer-url=http://keycloak.domestic.local/realms/domestic-backend
+            - --oidc-issuer-url=http://keycloak.domestic.local/realms/domestic
             - --redirect-url=http://kong-manager.domestic.local/oauth2/callback
             - --upstream=http://kong:8002
             - --http-address=0.0.0.0:4180
