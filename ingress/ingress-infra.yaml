@@ -79,3 +79,24 @@ spec:
                 name: minio
                 port:
                   number: 9000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-mailpit
+  namespace: domestic
+  labels:
+    app.kubernetes.io/part-of: domestic
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: mail.domestic.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mailpit
+                port:
+                  number: 8025
