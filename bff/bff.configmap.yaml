@@ -13,7 +13,7 @@ data:
   API_BASE_URL: "http://api:3000"
   # Auth
   KEYCLOAK_BASE_URL: "http://keycloak:8080"
-  KEYCLOAK_REALM: "backend"
+  KEYCLOAK_REALM: "domestic"
   KEYCLOAK_CLIENT_ID: "domestic-bff"
   KEYCLOAK_PORT: "8080"
   # Cache compartilhado com a API

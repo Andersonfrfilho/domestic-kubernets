@@ -28,7 +28,7 @@ data:
   DATABASE_POSTGRES_LOGGING: "false"
   DATABASE_POSTGRES_TIMEZONE: "Z"
   # Keycloak realm / client (from .env.example)
-  KEYCLOAK_REALM: "backend"
+  KEYCLOAK_REALM: "domestic"
   KEYCLOAK_CLIENT_ID: "domestic-api"
   # E2E test vars — required by the migration datasource validation schema
   DATABASE_POSTGRES_TEST_E2E_HOST: "postgres"
