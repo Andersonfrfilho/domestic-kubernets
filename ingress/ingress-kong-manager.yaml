@@ -1,0 +1,59 @@
+# Kong Manager — Dashboard built-in do Kong 3.x (open-source)
+# Acesso protegido por Keycloak via oauth2-proxy.
+#
+# Fluxo:
+#   Browser → kong-manager.domestic.local → nginx Ingress
+#     → oauth2-proxy (:4180) → verifica cookie Keycloak
+#     → não autenticado: redirect para keycloak.domestic.local/login
+#     → autenticado: encaminha para kong:8002 (Kong Manager UI)
+#
+# kong-admin.domestic.local expõe o Admin API (8001) usado pelo Kong Manager UI.
+# Acesso restrito à rede local (LAN) pelo dnsmasq — sem autenticação adicional.
+---
+# Kong Manager UI (protegida por Keycloak via oauth2-proxy)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-kong-manager
+  namespace: domestic
+  labels:
+    app.kubernetes.io/part-of: domestic
+    tier: admin
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: kong-manager.domestic.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: oauth2-proxy-kong-manager
+                port:
+                  number: 4180
+---
+# Kong Admin API (acesso direto — somente LAN)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-kong-admin
+  namespace: domestic
+  labels:
+    app.kubernetes.io/part-of: domestic
+    tier: admin
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: kong-admin.domestic.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kong
+                port:
+                  number: 8001

@@ -30,6 +30,8 @@ spec:
               name: proxy
             - containerPort: 8001
               name: admin
+            - containerPort: 8002
+              name: manager
           envFrom:
             - configMapRef:
                 name: kong-env-config

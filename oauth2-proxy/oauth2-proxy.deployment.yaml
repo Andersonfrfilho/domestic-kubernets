@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy-kong-manager
+  namespace: domestic
+  labels:
+    app: oauth2-proxy-kong-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oauth2-proxy-kong-manager
+  template:
+    metadata:
+      labels:
+        app: oauth2-proxy-kong-manager
+    spec:
+      containers:
+        - name: oauth2-proxy
+          image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
+          args:
+            - --provider=keycloak-oidc
+            - --client-id=kong-manager
+            - --oidc-issuer-url=http://keycloak.domestic.local/realms/domestic-backend
+            - --redirect-url=http://kong-manager.domestic.local/oauth2/callback
+            - --upstream=http://kong:8002
+            - --http-address=0.0.0.0:4180
+            - --email-domain=*
+            - --cookie-secure=false
+            - --cookie-name=_oauth2_proxy_kong_manager
+            - --skip-provider-button=true
+            - --pass-host-header=true
+            - --pass-access-token=false
+            - --silence-ping-logging=true
+          env:
+            - name: OAUTH2_PROXY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth2-proxy-kong-manager-secret
+                  key: OAUTH2_PROXY_CLIENT_SECRET
+            - name: OAUTH2_PROXY_COOKIE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth2-proxy-kong-manager-secret
+                  key: OAUTH2_PROXY_COOKIE_SECRET
+          ports:
+            - containerPort: 4180
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: 4180
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi

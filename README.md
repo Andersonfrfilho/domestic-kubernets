@@ -64,8 +64,8 @@ Utilize estes hostnames para acesso administrativo e conexão entre serviços. N
 | **RabbitMQ**   | [queue.domestic.local](http://queue.domestic.local)                    | `domestic`   | `backendapi123`  |
 | **MinIO**      | [storage.domestic.local](http://storage.domestic.local)                | `domestic`   | `minioadmin`     |
 | **ArgoCD**     | [argocd.domestic.local](http://argocd.domestic.local)                  | `admin`      | _(ver seção 14)_ |
+| **Kong Manager** | [kong-manager.domestic.local](http://kong-manager.domestic.local)    | via Keycloak | _(login no Keycloak → Kong Manager)_ |
 | **Grafana**    | [grafana.domestic.local](http://grafana.domestic.local)                | `admin`      | _(ver grafana secret)_ |
-| **Kong Admin** | [gateway.domestic.local:8001](http://gateway.domestic.local:8001)      | _(sem auth)_ | _(sem auth)_     |
 
 ### 2. Bancos de Dados e S3 (Conexão Direta)
 
@@ -982,6 +982,7 @@ kubectl logs job/backup-pg-test -n domestic -f
 | [metrics.domestic.local](http://metrics.domestic.local)                                       | Prometheus | Métricas                          |
 | [tracing.domestic.local](http://tracing.domestic.local)                                       | Jaeger     | Traces                            |
 | [argocd.domestic.local](http://argocd.domestic.local)                                         | ArgoCD     | GitOps UI                         |
+| [kong-manager.domestic.local](http://kong-manager.domestic.local)                             | Kong Manager | Dashboard built-in Kong 3.x (login via Keycloak) |
 
 ### Via NodePort (fallback / debug sem Ingress)
 
