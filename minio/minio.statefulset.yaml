@@ -25,7 +25,7 @@ spec:
       containers:
         - name: minio
           image: minio/minio:latest
-          args: ["server", "/data", "--console-address", ":9001"]
+          args: ["server", "/data", "--console-address", ":9001", "--address", ":9000"]
           ports:
             - containerPort: 9000
               name: api
@@ -44,6 +44,8 @@ spec:
                   key: MINIO_ROOT_PASSWORD
             - name: MINIO_IDENTITY_OPENID_CONFIG_URL
               value: "http://keycloak.domestic.local/realms/domestic/.well-known/openid-configuration"
+            - name: MINIO_IDENTITY_OPENID_ENABLE
+              value: "on"
             - name: MINIO_IDENTITY_OPENID_CLIENT_ID
               value: "minio"
             - name: MINIO_IDENTITY_OPENID_CLIENT_SECRET
@@ -52,12 +54,16 @@ spec:
               value: "Keycloak"
             - name: MINIO_IDENTITY_OPENID_SCOPES
               value: "openid,profile,email,groups"
+            - name: MINIO_IDENTITY_OPENID_CLAIM_NAME
+              value: "groups"
             - name: MINIO_IDENTITY_OPENID_REDIRECT_URI
               value: "http://storage.domestic.local/oauth_callback"
+            - name: MINIO_BROWSER_ADDITIONAL_CSP
+              value: "img-src 'self' data:; connect-src 'self' http://keycloak.domestic.local http://storage.domestic.local;"
             - name: MINIO_BROWSER_REDIRECT_URL
               value: "http://storage.domestic.local"
             - name: MINIO_SERVER_URL
-              value: "http://storage.domestic.local"
+              value: "http://s3.domestic.local"
           volumeMounts:
             - name: minio-data
               mountPath: /data

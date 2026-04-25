@@ -1304,6 +1304,59 @@ data:
           "optionalClientScopes": []
         },
         {
+          "id": "2883db99-a8c0-43b6-9ab5-75e119772346",
+          "clientId": "kong-manager",
+          "name": "Kong Manager Dashboard",
+          "description": "Client for Kong Manager UI via oauth2-proxy",
+          "surrogateAuthRequired": false,
+          "enabled": true,
+          "alwaysDisplayInConsole": false,
+          "clientAuthenticatorType": "client-secret",
+          "secret": "kong-manager-client-secret",
+          "redirectUris": [
+            "http://kong-manager.domestic.local/oauth2/callback"
+          ],
+          "webOrigins": [
+            "http://kong-manager.domestic.local"
+          ],
+          "notBefore": 0,
+          "bearerOnly": false,
+          "consentRequired": false,
+          "standardFlowEnabled": true,
+          "implicitFlowEnabled": false,
+          "directAccessGrantsEnabled": false,
+          "serviceAccountsEnabled": false,
+          "publicClient": false,
+          "frontchannelLogout": false,
+          "protocol": "openid-connect",
+          "attributes": {
+            "post.logout.redirect.uris": "+"
+          },
+          "authenticationFlowBindingOverrides": {},
+          "fullScopeAllowed": true,
+          "nodeReRegistrationTimeout": -1,
+          "protocolMappers": [
+            {
+              "id": "audience-mapper-kong-manager",
+              "name": "audience-mapper",
+              "protocol": "openid-connect",
+              "protocolMapper": "oidc-audience-mapper",
+              "consentRequired": false,
+              "config": {
+                "included.client.audience": "kong-manager",
+                "id.token.claim": "true",
+                "access.token.claim": "true"
+              }
+            }
+          ],
+          "defaultClientScopes": [
+            "openid",
+            "email",
+            "profile"
+          ],
+          "optionalClientScopes": []
+        },
+        {
           "id": "da6bb1df-9539-4fd4-97ab-91247f30fb08",
           "clientId": "domestic-worker",
           "name": "Domestic Backend Worker",
@@ -1446,7 +1499,7 @@ data:
                 "full.path": "false",
                 "id.token.claim": "true",
                 "access.token.claim": "true",
-                "claim.name": "groups",
+                "claim.name": "policy",
                 "userinfo.token.claim": "true"
               }
             }

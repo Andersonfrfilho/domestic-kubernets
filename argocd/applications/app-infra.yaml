@@ -47,7 +47,7 @@ spec:
   syncPolicy:
     automated:
       prune: true      # remove recursos que foram deletados do git
-      selfHeal: true   # reaplica se alguém editar manualmente no cluster
+      selfHeal: false   # reaplica se alguém editar manualmente no cluster
     syncOptions:
       - CreateNamespace=true
       - PrunePropagationPolicy=foreground
