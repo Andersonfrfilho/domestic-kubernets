@@ -6,6 +6,7 @@ metadata:
   labels:
     app: mailpit
 spec:
+  type: LoadBalancer
   selector:
     app: mailpit
   ports:

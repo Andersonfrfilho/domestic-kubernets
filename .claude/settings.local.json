@@ -59,7 +59,24 @@
       "Bash(arping -I wlo1 -c 3 192.168.3.203)",
       "Bash(arp -n)",
       "Bash(ip neigh *)",
-      "Bash(systemctl cat *)"
+      "Bash(systemctl cat *)",
+      "WebSearch",
+      "Bash(rtk ls *)",
+      "Bash(claude plugin *)",
+      "Bash(rtk kubectl *)",
+      "Bash(rtk read *)",
+      "Bash(rtk grep *)",
+      "Bash(rtk git *)",
+      "Bash(argocd app *)",
+      "Bash(sed -i 's|ghcr.io/andersonfrfilho/domestic-api:main|ghcr.io/andersonfrfilho/domestic-backend-api:main|g' /home/miyazaki/Documents/personal/domestic/domestic-kubernets/api/api.deployment.yaml /home/miyazaki/Documents/personal/domestic/domestic-kubernets/migrator/migrator.job.yaml)",
+      "Bash(sed -i 's|ghcr.io/andersonfrfilho/domestic-bff:main|ghcr.io/andersonfrfilho/domestic-backend-bff:main|g' /home/miyazaki/Documents/personal/domestic/domestic-kubernets/bff/bff.deployment.yaml)",
+      "Bash(sed -i 's|ghcr.io/andersonfrfilho/domestic-worker:main|ghcr.io/andersonfrfilho/domestic-backend-worker:main|g' /home/miyazaki/Documents/personal/domestic/domestic-kubernets/worker/worker.deployment.yaml)",
+      "Bash(sed -i 's|ghcr.io/andersonfrfilho/domestic-cron:main|ghcr.io/andersonfrfilho/domestic-backend-cron:main|g' /home/miyazaki/Documents/personal/domestic/domestic-kubernets/cron/cron.deployment.yaml /home/miyazaki/Documents/personal/domestic/domestic-kubernets/cron/cron.k8s-jobs.yaml)",
+      "Bash(rtk wc *)",
+      "Bash(rtk curl *)",
+      "Bash(dig mail.domestic.local)",
+      "Bash(grep -v \"127.0.0\\\\|10.42\\\\|172.\\\\|192.168.49\" kubectl logs -n metallb-system -l component=speaker --tail=3)",
+      "Bash(grep -v \"^$\")"
     ]
   }
 }

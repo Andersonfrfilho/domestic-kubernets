@@ -18,6 +18,10 @@ spec:
         app: minio
         tier: storage
     spec:
+      hostAliases:
+        - ip: "10.43.217.235"
+          hostnames:
+            - "keycloak.domestic.local"
       containers:
         - name: minio
           image: minio/minio:latest
@@ -48,8 +52,12 @@ spec:
               value: "Keycloak"
             - name: MINIO_IDENTITY_OPENID_SCOPES
               value: "openid,profile,email,groups"
-            - name: MINIO_IDENTITY_OPENID_REDIRECT_URI_DYNAMIC
-              value: "on"
+            - name: MINIO_IDENTITY_OPENID_REDIRECT_URI
+              value: "http://storage.domestic.local/oauth_callback"
+            - name: MINIO_BROWSER_REDIRECT_URL
+              value: "http://storage.domestic.local"
+            - name: MINIO_SERVER_URL
+              value: "http://storage.domestic.local"
           volumeMounts:
             - name: minio-data
               mountPath: /data

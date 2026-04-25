@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  url: http://argocd.domestic.local
+  oidc.config: |
+    name: Keycloak
+    issuer: http://keycloak.domestic.local/realms/domestic
+    clientID: argocd
+    clientSecret: argocd-client-secret
+    requestedScopes:
+      - openid
+      - profile
+      - email
+      - groups
+    requestedIDTokenClaims:
+      groups:
+        essential: true

@@ -955,6 +955,10 @@ data:
           ],
           "defaultClientScopes": [],
           "optionalClientScopes": [
+            "openid",
+            "profile",
+            "email",
+            "groups",
             "offline_access"
           ]
         },
@@ -1391,6 +1395,10 @@ data:
           ],
           "defaultClientScopes": [],
           "optionalClientScopes": [
+            "openid",
+            "profile",
+            "email",
+            "groups",
             "offline_access"
           ]
         },
@@ -1445,6 +1453,10 @@ data:
           ],
           "defaultClientScopes": [],
           "optionalClientScopes": [
+            "openid",
+            "profile",
+            "email",
+            "groups",
             "offline_access"
           ]
         },
@@ -1499,6 +1511,10 @@ data:
           ],
           "defaultClientScopes": [],
           "optionalClientScopes": [
+            "openid",
+            "profile",
+            "email",
+            "groups",
             "offline_access"
           ]
         },
@@ -1587,6 +1603,127 @@ data:
         }
       ],
       "clientScopes": [
+        {
+          "id": "4ac6deb9-6062-4309-8c88-a9dd89566ef2",
+          "name": "openid",
+          "description": "OpenID Connect built-in scope",
+          "protocol": "openid-connect",
+          "attributes": {
+            "include.in.token.scope": "true",
+            "display.on.consent.screen": "false"
+          }
+        },
+        {
+          "id": "9f0169b1-d80e-4199-80d5-6c5676472f28",
+          "name": "profile",
+          "description": "OpenID Connect built-in scope: profile",
+          "protocol": "openid-connect",
+          "attributes": {
+            "include.in.token.scope": "true",
+            "display.on.consent.screen": "true"
+          },
+          "protocolMappers": [
+            {
+              "id": "76613220-308a-425f-8bdc-9b2dce447be9",
+              "name": "full name",
+              "protocol": "openid-connect",
+              "protocolMapper": "oidc-full-name-mapper",
+              "consentRequired": false,
+              "config": {
+                "id.token.claim": "true",
+                "access.token.claim": "true",
+                "userinfo.token.claim": "true"
+              }
+            },
+            {
+              "id": "9812ba93-cbf2-40c3-8b35-a48ff3746130",
+              "name": "given name",
+              "protocol": "openid-connect",
+              "protocolMapper": "oidc-usermodel-property-mapper",
+              "consentRequired": false,
+              "config": {
+                "user.attribute": "firstName",
+                "id.token.claim": "true",
+                "access.token.claim": "true",
+                "claim.name": "given_name",
+                "jsonType.label": "String",
+                "userinfo.token.claim": "true"
+              }
+            },
+            {
+              "id": "36b33032-e890-4fae-8380-8b58b57842f5",
+              "name": "family name",
+              "protocol": "openid-connect",
+              "protocolMapper": "oidc-usermodel-property-mapper",
+              "consentRequired": false,
+              "config": {
+                "user.attribute": "lastName",
+                "id.token.claim": "true",
+                "access.token.claim": "true",
+                "claim.name": "family_name",
+                "jsonType.label": "String",
+                "userinfo.token.claim": "true"
+              }
+            },
+            {
+              "id": "90fce6da-0157-4cf3-944d-c3e119f872b1",
+              "name": "username",
+              "protocol": "openid-connect",
+              "protocolMapper": "oidc-usermodel-property-mapper",
+              "consentRequired": false,
+              "config": {
+                "user.attribute": "username",
+                "id.token.claim": "true",
+                "access.token.claim": "true",
+                "claim.name": "preferred_username",
+                "jsonType.label": "String",
+                "userinfo.token.claim": "true"
+              }
+            }
+          ]
+        },
+        {
+          "id": "3c059d89-0d7a-4bb5-952c-875a496f908c",
+          "name": "email",
+          "description": "OpenID Connect built-in scope: email",
+          "protocol": "openid-connect",
+          "attributes": {
+            "include.in.token.scope": "true",
+            "display.on.consent.screen": "true"
+          },
+          "protocolMappers": [
+            {
+              "id": "62f19399-f646-414d-86e2-b06cc29ca4d9",
+              "name": "email",
+              "protocol": "openid-connect",
+              "protocolMapper": "oidc-usermodel-property-mapper",
+              "consentRequired": false,
+              "config": {
+                "user.attribute": "email",
+                "id.token.claim": "true",
+                "access.token.claim": "true",
+                "claim.name": "email",
+                "jsonType.label": "String",
+                "userinfo.token.claim": "true"
+              }
+            },
+            {
+              "id": "50c62174-e108-4017-978b-c88e775f0c50",
+              "name": "email verified",
+              "protocol": "openid-connect",
+              "protocolMapper": "oidc-usermodel-property-mapper",
+              "consentRequired": false,
+              "config": {
+                "user.attribute": "emailVerified",
+                "id.token.claim": "true",
+                "access.token.claim": "true",
+                "claim.name": "email_verified",
+                "jsonType.label": "boolean",
+                "userinfo.token.claim": "true"
+              }
+            }
+          ]
+        },
         {
           "id": "420e8557-bf15-43dc-aa36-ca90080fcdb7",
           "name": "send-notifications",
@@ -1717,6 +1854,32 @@ data:
             "include.in.token.scope": "true",
             "display.on.consent.screen": "false"
           }
+        },
+        {
+          "id": "f6f4688c-9f6e-45d4-aefe-b44effd6e69a",
+          "name": "groups",
+          "description": "Group membership",
+          "protocol": "openid-connect",
+          "attributes": {
+            "include.in.token.scope": "true",
+            "display.on.consent.screen": "false"
+          },
+          "protocolMappers": [
+            {
+              "id": "68fbc8de-90f0-4551-b9b8-535a0ba6c0bd",
+              "name": "groups",
+              "protocol": "openid-connect",
+              "protocolMapper": "oidc-group-membership-mapper",
+              "consentRequired": false,
+              "config": {
+                "full.path": "false",
+                "id.token.claim": "true",
+                "access.token.claim": "true",
+                "claim.name": "groups",
+                "userinfo.token.claim": "true"
+              }
+            }
+          ]
         }
       ],
       "defaultDefaultClientScopes": [],
