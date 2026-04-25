@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: domestic-prometheus
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: domestic
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: domestic
+  source:
+    repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
+    targetRevision: HEAD
+    path: observability/prometheus
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: domestic
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 2m
