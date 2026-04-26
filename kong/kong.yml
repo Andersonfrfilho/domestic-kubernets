@@ -21,8 +21,6 @@ consumers:
 
 plugins:
   # Faz Kong enviar Host: keycloak.domestic.local ao proxiar para auth e account.
-  # Sem isso, Keycloak usa "keycloak:8080" como issuer nos tokens gerados
-  # internamente — o que não bate com o consumer key acima.
   - name: request-transformer
     service: auth-service
     config:
@@ -39,14 +37,6 @@ plugins:
 
 services:
   # ── Auth (sem JWT) ────────────────────────────────────────────────────────
-  # Mobile usa este prefixo para tudo relacionado a autenticação.
-  # Internamente proxy para os endpoints OIDC do Keycloak.
-  #
-  # POST /auth/token        → login (grant_type=password ou authorization_code)
-  # POST /auth/token        → refresh (grant_type=refresh_token)
-  # POST /auth/logout       → logout (revoga refresh_token)
-  # GET  /auth/certs        → JWKs (chave pública do realm)
-  # GET  /auth/userinfo     → dados do usuário autenticado
   - name: auth-service
     url: http://keycloak:8080/realms/domestic/protocol/openid-connect
     routes:
@@ -56,15 +46,6 @@ services:
         strip_path: true
 
   # ── Account / password reset (sem JWT) ───────────────────────────────────
-  # Keycloak envia e-mail com link de reset; mobile abre o link no browser.
-  #
-  # Fluxo de reset de senha:
-  #   1. Mobile POST /auth/forgot-password  { "email": "..." }  (via NestJS API)
-  #   2. API chama Admin REST → execute-actions-email → Keycloak envia e-mail
-  #   3. Link no e-mail → browser abre keycloak.domestic.local/... → usuário redefine
-  #
-  # Ou direto no browser:
-  #   GET /account/login-actions/reset-credentials?client_id=domestic-bff
   - name: account-service
     url: http://keycloak:8080/realms/domestic
     routes:
@@ -88,17 +69,24 @@ services:
           - /api
         strip_path: true
 
-  # ── BFF — Backend for Frontend (protegido por JWT) ────────────────────────
+  # ── BFF — Backend for Frontend ──────────────────────────────────────────
   - name: bff-service
     url: http://bff:3001
-    plugins:
-      - name: jwt
-        config:
-          key_claim_name: iss
-          claims_to_verify:
-            - exp
     routes:
-      - name: bff-route
+      # Rota pública para Autenticação (Forgot Password, etc)
+      - name: bff-public-route
+        paths:
+          - /bff/auth
+        strip_path: false
+      
+      # Rotas privadas protegidas por JWT
+      - name: bff-private-route
         paths:
           - /bff
-        strip_path: true
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              key_claim_name: iss
+              claims_to_verify:
+                - exp
