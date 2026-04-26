@@ -21,3 +21,7 @@ data:
   CACHE_REDIS_PORT: "6379"
   # MongoDB — BFF usa para cache de dashboard e persistência local
   MONGO_URI: "mongodb://mongo:27017/domestic-bff"
+  # Observability
+  OTEL_SERVICE_NAME: "domestic-bff"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
+  LOG_LEVEL: "info"

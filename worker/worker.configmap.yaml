@@ -28,3 +28,7 @@ data:
   # Storage (para processar uploads, gerar relatórios, etc.)
   STORAGE_MINIO_ENDPOINT: "minio"
   STORAGE_MINIO_PORT: "9000"
+  # Observability
+  OTEL_SERVICE_NAME: "domestic-worker"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
+  LOG_LEVEL: "info"

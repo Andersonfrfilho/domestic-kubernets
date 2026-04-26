@@ -30,6 +30,10 @@ data:
   # Keycloak realm / client (from .env.example)
   KEYCLOAK_REALM: "domestic"
   KEYCLOAK_CLIENT_ID: "domestic-api"
+  # Observability
+  OTEL_SERVICE_NAME: "domestic-api"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
+  LOG_LEVEL: "info"
   # E2E test vars — required by the migration datasource validation schema
   DATABASE_POSTGRES_TEST_E2E_HOST: "postgres"
   DATABASE_POSTGRES_TEST_E2E_PORT: "5432"

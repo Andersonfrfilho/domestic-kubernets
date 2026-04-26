@@ -31,6 +31,10 @@ spec:
               name: collector-grpc
             - containerPort: 9411
               name: zipkin
+            - containerPort: 4317
+              name: otlp-grpc
+            - containerPort: 4318
+              name: otlp-http
           env:
             - name: COLLECTOR_OTLP_ENABLED
               value: "true"

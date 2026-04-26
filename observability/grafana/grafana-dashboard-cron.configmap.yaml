@@ -1,0 +1,135 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-cron
+  namespace: domestic
+  labels:
+    app: grafana
+data:
+  cron.json: |
+    {
+      "title": "Domestic Cron",
+      "uid": "domestic-cron",
+      "version": 1,
+      "refresh": "60s",
+      "time": { "from": "now-6h", "to": "now" },
+      "templating": {
+        "list": [
+          {
+            "name": "interval",
+            "type": "interval",
+            "query": "5m,15m,30m,1h",
+            "current": { "value": "15m" }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Job Executions Rate",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(rate(cron_job_runs_total{service=\"domestic-cron\"}[$interval])) by (job_name, status)",
+              "legendFormat": "{{job_name}} ({{status}})",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "title": "Job Success vs Failure (total)",
+          "type": "piechart",
+          "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(cron_job_runs_total{service=\"domestic-cron\",status=\"success\"})",
+              "legendFormat": "Success",
+              "datasource": "Prometheus"
+            },
+            {
+              "expr": "sum(cron_job_runs_total{service=\"domestic-cron\",status=\"failed\"})",
+              "legendFormat": "Failed",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "title": "Job Duration P50 / P95 (s)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, sum(rate(cron_job_duration_seconds_bucket{service=\"domestic-cron\"}[$interval])) by (le, job_name))",
+              "legendFormat": "p50 {{job_name}}",
+              "datasource": "Prometheus"
+            },
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(cron_job_duration_seconds_bucket{service=\"domestic-cron\"}[$interval])) by (le, job_name))",
+              "legendFormat": "p95 {{job_name}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "title": "Failed Jobs (all time)",
+          "type": "stat",
+          "gridPos": { "x": 12, "y": 8, "w": 6, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(cron_job_runs_total{service=\"domestic-cron\",status=\"failed\"}) by (job_name)",
+              "legendFormat": "{{job_name}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "title": "Successful Runs (all time)",
+          "type": "stat",
+          "gridPos": { "x": 18, "y": 8, "w": 6, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(cron_job_runs_total{service=\"domestic-cron\",status=\"success\"})",
+              "legendFormat": "Total",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "title": "Node.js Heap Used (bytes)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "nodejs_heap_size_used_bytes{job=\"domestic-cron\"}",
+              "legendFormat": "Heap Used",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "title": "Cron Logs",
+          "type": "logs",
+          "gridPos": { "x": 0, "y": 24, "w": 24, "h": 10 },
+          "targets": [
+            {
+              "expr": "{namespace=\"domestic\", app=\"cron\"}",
+              "legendFormat": "",
+              "datasource": "Loki"
+            }
+          ],
+          "options": {
+            "showLabels": false,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          }
+        }
+      ]
+    }

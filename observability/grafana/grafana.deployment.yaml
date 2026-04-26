@@ -61,6 +61,28 @@ spec:
           volumeMounts:
             - name: grafana-data
               mountPath: /var/lib/grafana
+            - name: grafana-datasources
+              mountPath: /etc/grafana/provisioning/datasources
+              readOnly: true
+            - name: grafana-dashboards-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+              readOnly: true
+            - name: grafana-dashboard-api
+              mountPath: /var/lib/grafana/dashboards/api.json
+              subPath: api.json
+              readOnly: true
+            - name: grafana-dashboard-bff
+              mountPath: /var/lib/grafana/dashboards/bff.json
+              subPath: bff.json
+              readOnly: true
+            - name: grafana-dashboard-worker
+              mountPath: /var/lib/grafana/dashboards/worker.json
+              subPath: worker.json
+              readOnly: true
+            - name: grafana-dashboard-cron
+              mountPath: /var/lib/grafana/dashboards/cron.json
+              subPath: cron.json
+              readOnly: true
           resources:
             requests:
               memory: "128Mi"
@@ -83,3 +105,21 @@ spec:
       volumes:
         - name: grafana-data
           emptyDir: {}
+        - name: grafana-datasources
+          configMap:
+            name: grafana-datasources
+        - name: grafana-dashboards-provider
+          configMap:
+            name: grafana-dashboards-provider
+        - name: grafana-dashboard-api
+          configMap:
+            name: grafana-dashboard-api
+        - name: grafana-dashboard-bff
+          configMap:
+            name: grafana-dashboard-bff
+        - name: grafana-dashboard-worker
+          configMap:
+            name: grafana-dashboard-worker
+        - name: grafana-dashboard-cron
+          configMap:
+            name: grafana-dashboard-cron

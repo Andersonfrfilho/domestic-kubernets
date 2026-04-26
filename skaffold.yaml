@@ -32,10 +32,10 @@ deploy:
       - ingress/ingress-core.yaml
       - ingress/ingress-services.yaml
       - ingress/ingress-infra.yaml
-      # Descomente quando os serviços existirem:
-      # - bff/*.yaml
-      # - worker/*.yaml
-      # - cron/*.yaml
+      - bff/*.yaml
+      - worker/*.yaml
+      - cron/*.yaml
+      - argocd/applications/*.yaml
 
 # ──────────────────────────────────────────────────────────
 # Perfis — selecione com: skaffold dev --profile=<nome>
