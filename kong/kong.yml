@@ -75,6 +75,7 @@ services:
     routes:
       # Rota pública para Autenticação (Forgot Password, etc)
       - name: bff-public-route
+        regex_priority: 100
         paths:
           - /bff/auth
         strip_path: false

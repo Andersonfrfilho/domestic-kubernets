@@ -753,6 +753,11 @@ data:
           "realmRoles": [
             "admin"
           ],
+          "clientRoles": {
+            "realm-management": [
+              "realm-admin"
+            ]
+          },
           "groups": [
             "/admin"
           ]

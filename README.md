@@ -60,10 +60,13 @@ Utilize estes hostnames para acesso administrativo e conexão entre serviços. N
 
 | Serviço        | URL                                                                    | Usuário      | Senha            |
 | :------------- | :--------------------------------------------------------------------- | :----------- | :--------------- |
-| **Keycloak**   | [keycloak.domestic.local](http://keycloak.domestic.local)              | `domestic`   | `admin`          |
+| **Keycloak** (master admin) | [keycloak.domestic.local/admin/master/console](http://keycloak.domestic.local/admin/master/console) | `domestic` | `admin` |
+| **Keycloak** (realm domestic) | [keycloak.domestic.local/admin/domestic/console](http://keycloak.domestic.local/admin/domestic/console) | `anderson.filho` | `10203040` |
+| **SSO Login** (realm domestic) | [keycloak.domestic.local/realms/domestic/account](http://keycloak.domestic.local/realms/domestic/account) | via SSO | _(login com conta do realm)_ |
 | **RabbitMQ**   | [queue.domestic.local](http://queue.domestic.local)                    | `domestic`   | `backendapi123`  |
 | **MinIO**      | [storage.domestic.local](http://storage.domestic.local)                | `domestic`   | `minioadmin`     |
-| **ArgoCD**     | [argocd.domestic.local](http://argocd.domestic.local)                  | `admin`      | _(ver seção 14)_ |
+| **ArgoCD** (SSO) | [argocd.domestic.local/auth/login](http://argocd.domestic.local/auth/login?return_url=http%3A%2F%2Fargocd.domestic.local%2Fapplications) | via Keycloak SSO | _(login com conta do realm domestic)_ |
+| **ArgoCD** (admin local) | [argocd.domestic.local](http://argocd.domestic.local)          | `admin`      | _(ver seção abaixo)_ |
 | **Kong Manager** | [kong-manager.domestic.local](http://kong-manager.domestic.local)    | via Keycloak | _(login no Keycloak → Kong Manager)_ |
 | **Grafana**    | [grafana.domestic.local](http://grafana.domestic.local)                | `admin`      | _(ver grafana secret)_ |
 
