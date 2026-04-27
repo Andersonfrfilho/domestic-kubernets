@@ -16,6 +16,8 @@ data:
   KEYCLOAK_REALM: "domestic"
   KEYCLOAK_CLIENT_ID: "domestic-bff"
   KEYCLOAK_PORT: "8080"
+  KEYCLOAK_ADMIN_USER: "domestic"
+  KEYCLOAK_ADMIN_PASSWORD: "admin"
   # Cache compartilhado com a API
   CACHE_REDIS_HOST: "redis"
   CACHE_REDIS_PORT: "6379"

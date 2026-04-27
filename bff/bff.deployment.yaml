@@ -58,7 +58,7 @@ spec:
             timeoutSeconds: 5
           readinessProbe:
             httpGet:
-              path: /bff/home
+              path: /health
               port: 3001
             initialDelaySeconds: 20
             periodSeconds: 10
