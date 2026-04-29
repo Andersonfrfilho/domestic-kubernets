@@ -40,7 +40,7 @@ data:
       "registrationAllowed": true,
       "registrationEmailAsUsername": false,
       "rememberMe": false,
-      "verifyEmail": false,
+      "verifyEmail": true,
       "loginWithEmailAllowed": true,
       "duplicateEmailsAllowed": false,
       "resetPasswordAllowed": true,
@@ -2808,6 +2808,14 @@ data:
         "organizationsEnabled": "false"
       },
       "keycloakVersion": "25.0.6",
+      "smtpServer": {
+        "host": "${SMTP_HOST:mailhog}",
+        "port": "${SMTP_PORT:1025}",
+        "from": "${SMTP_FROM:noreply@domestic.local}",
+        "fromDisplayName": "Cawme",
+        "starttls": "${SMTP_STARTTLS:false}",
+        "auth": "${SMTP_AUTH:false}"
+      },
       "userManagedAccessAllowed": false,
       "organizationsEnabled": false,
       "clientProfiles": {
