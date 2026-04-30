@@ -92,9 +92,10 @@ async function run() {
 
   // ── Step 4: Register user ─────────────────────────────────────────
   console.log(`  → Step 4: Cadastrar usuário`);
+  const uniqueEmail = `test${Date.now()}@example.com`;
   try {
     const res = await request(BASE, '/bff/onboarding/register', 'POST', {
-      email: env.REGISTER_EMAIL,
+      email: uniqueEmail,
       password: env.REGISTER_PASSWORD,
       firstName: env.REGISTER_FIRST_NAME,
       lastName: env.REGISTER_LAST_NAME,
