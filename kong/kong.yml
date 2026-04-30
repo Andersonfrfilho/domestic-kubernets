@@ -73,11 +73,21 @@ services:
   - name: bff-service
     url: http://bff:3001
     routes:
-      # Rota pública para Autenticação (Forgot Password, etc)
-      - name: bff-public-route
+      # Rota pública para Autenticação (registro, forgot password, verificação)
+      - name: bff-auth-route
         regex_priority: 100
         paths:
           - /bff/auth
+        strip_path: false
+      
+      # Rotas públicas (app-config, home, search, health)
+      - name: bff-public-route
+        regex_priority: 90
+        paths:
+          - /bff/app-config
+          - /bff/home
+          - /bff/search
+          - /bff/health
         strip_path: false
       
       # Rotas privadas protegidas por JWT
