@@ -30,14 +30,24 @@ Host: gateway.domestic.local
 
 ### Auth Mechanism
 
-After login via Keycloak, Kong injects these headers automatically:
-- `X-User-Id` — Keycloak user UUID
-- `X-User-Roles` — User roles
-- `X-User-Type` — `contractor` or `provider`
+Kong uses **JWT plugin** on private routes (`/bff/*` catch-all). After login via Keycloak, the app receives a JWT token which must be passed on subsequent requests.
 
-For local testing without Kong, manually pass `X-User-Id`:
+**Private routes** (require JWT):
+- `/bff/dashboard/*`
+- `/bff/notifications/*`
+- `/bff/chat/*`
+
+**Public routes** (no auth):
+- `/bff/app-config`, `/bff/health`, `/bff/home`, `/bff/search`
+- `/bff/onboarding/*`
+- `/bff/auth/terms/*`
+- `/bff/auth/forgot-password`
+
+For local testing with JWT:
 ```bash
-curl -H "X-User-Id: <your-keycloak-id>" ...
+curl -H "Host: gateway.domestic.local" \
+  -H "Authorization: Bearer <jwt-token>" \
+  http://192.168.3.203/bff/dashboard/contractor
 ```
 
 ---
@@ -181,11 +191,8 @@ curl -X POST -H "Host: gateway.domestic.local" \
 ```
 
 **Success (200):**
-```json
-{
-  "success": true,
-  "message": "Email de recuperacao enviado"
-}
+```
+(empty body — 200 OK)
 ```
 
 **Error (404) — Email not found:**
@@ -496,6 +503,8 @@ curl -H "Host: gateway.domestic.local" \
 
 ### 5.2 Search
 
+> **Note:** Currently returns 500 — pre-existing bug in the search service.
+
 ```bash
 curl -H "Host: gateway.domestic.local" \
   "http://192.168.3.203/bff/search?q=eletricista&category=home-services&page=1&limit=20"
@@ -514,9 +523,11 @@ curl -H "Host: gateway.domestic.local" \
 
 ### 5.3 Dashboard — Contractor
 
+> **Requires JWT authentication** via Kong JWT plugin.
+
 ```bash
 curl -H "Host: gateway.domestic.local" \
-  -H "X-User-Id: bc7b9565-fdb1-4300-b0c1-aca8230c14d5" \
+  -H "Authorization: Bearer <jwt-token>" \
   http://192.168.3.203/bff/dashboard/contractor
 ```
 
@@ -532,9 +543,11 @@ curl -H "Host: gateway.domestic.local" \
 
 ### 5.4 Dashboard — Provider
 
+> **Requires JWT authentication** via Kong JWT plugin.
+
 ```bash
 curl -H "Host: gateway.domestic.local" \
-  -H "X-User-Id: bc7b9565-fdb1-4300-b0c1-aca8230c14d5" \
+  -H "Authorization: Bearer <jwt-token>" \
   http://192.168.3.203/bff/dashboard/provider
 ```
 
@@ -552,51 +565,55 @@ curl -H "Host: gateway.domestic.local" \
 
 ### 5.5 Notifications
 
+> **Requires JWT authentication** via Kong JWT plugin.
+
 ```bash
 # List notifications
 curl -H "Host: gateway.domestic.local" \
-  -H "X-User-Id: bc7b9565-fdb1-4300-b0c1-aca8230c14d5" \
+  -H "Authorization: Bearer <jwt-token>" \
   http://192.168.3.203/bff/notifications
 
 # Unread count
 curl -H "Host: gateway.domestic.local" \
-  -H "X-User-Id: bc7b9565-fdb1-4300-b0c1-aca8230c14d5" \
+  -H "Authorization: Bearer <jwt-token>" \
   http://192.168.3.203/bff/notifications/unread-count
 
 # Mark as read
 curl -X PUT -H "Host: gateway.domestic.local" \
-  -H "X-User-Id: bc7b9565-fdb1-4300-b0c1-aca8230c14d5" \
+  -H "Authorization: Bearer <jwt-token>" \
   http://192.168.3.203/bff/notifications/<notification-id>/read
 
 # Mark all as read
 curl -X PUT -H "Host: gateway.domestic.local" \
-  -H "X-User-Id: bc7b9565-fdb1-4300-b0c1-aca8230c14d5" \
+  -H "Authorization: Bearer <jwt-token>" \
   http://192.168.3.203/bff/notifications/read-all
 ```
 
 ### 5.6 Chat
 
+> **Requires JWT authentication** via Kong JWT plugin.
+
 ```bash
 # Create chat room
 curl -X POST -H "Host: gateway.domestic.local" \
-  -H "X-User-Id: bc7b9565-fdb1-4300-b0c1-aca8230c14d5" \
+  -H "Authorization: Bearer <jwt-token>" \
   -H "Content-Type: application/json" \
   -d '{"providerId": "provider-uuid"}' \
   http://192.168.3.203/bff/chat/rooms
 
 # List rooms
 curl -H "Host: gateway.domestic.local" \
-  -H "X-User-Id: bc7b9565-fdb1-4300-b0c1-aca8230c14d5" \
+  -H "Authorization: Bearer <jwt-token>" \
   http://192.168.3.203/bff/chat/rooms
 
 # Get messages
 curl -H "Host: gateway.domestic.local" \
-  -H "X-User-Id: bc7b9565-fdb1-4300-b0c1-aca8230c14d5" \
+  -H "Authorization: Bearer <jwt-token>" \
   "http://192.168.3.203/bff/chat/rooms/<room-id>/messages?page=1&limit=50"
 
 # Send message
 curl -X POST -H "Host: gateway.domestic.local" \
-  -H "X-User-Id: bc7b9565-fdb1-4300-b0c1-aca8230c14d5" \
+  -H "Authorization: Bearer <jwt-token>" \
   -H "Content-Type: application/json" \
   -d '{"content": "Ola, preciso de um orcamento"}' \
   http://192.168.3.203/bff/chat/rooms/<room-id>/messages
@@ -740,3 +757,43 @@ node flows/onboarding.flow.js
 # Terms flow (for existing user)
 node flows/terms.flow.js <user-keycloak-id>
 ```
+
+---
+
+## Kong Routes Reference
+
+All routes are served through Kong at `http://192.168.3.203` (or `http://gateway.domestic.local`).
+
+### Public Routes (no auth)
+
+| Kong Route | Paths | Backend |
+|---|---|---|
+| `bff-auth-route` | `/bff/auth/*` | BFF (`/bff/auth/forgot-password`) |
+| `bff-onboarding-public-route` | `/bff/onboarding/register`<br>`/bff/onboarding/verification/send`<br>`/bff/onboarding/verification/verify`<br>`/bff/onboarding/cep/*`<br>`/bff/onboarding/documents/upload` | BFF |
+| `bff-terms-public-route` | `/bff/auth/terms/current`<br>`/bff/auth/terms/versions`<br>`/bff/auth/terms/check-pending`<br>`/bff/auth/terms/accept` | BFF |
+| `bff-public-route` | `/bff/app-config`<br>`/bff/home`<br>`/bff/search`<br>`/bff/health` | BFF |
+| `auth-route` | `/auth/*` | Keycloak (login, token, etc.) |
+| `account-route` | `/account/*` | Keycloak (password reset) |
+
+### Private Routes (JWT required)
+
+| Kong Route | Paths | Backend | Plugin |
+|---|---|---|---|
+| `bff-private-route` | `/bff/*` (catch-all) | BFF | JWT (`iss` claim) |
+| `api-route` | `/api/*` | API | JWT (`iss` claim) |
+
+### How Kong Routing Works
+
+```
+Request: POST /bff/onboarding/register
+  ↓
+Kong matches: bff-onboarding-public-route (priority 95)
+  ↓
+strip_path: false → forwards full path to BFF
+  ↓
+BFF receives: POST /bff/onboarding/register
+  ↓
+@ Controller('bff/onboarding') + @Post('register') → handled
+```
+
+**Important:** `strip_path: false` means the BFF receives the full path including `/bff/...`. This is why all BFF controllers use `@Controller('bff/...')` prefix.
