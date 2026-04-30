@@ -4,7 +4,7 @@ function request(baseUrl, path, method = 'GET', body = null) {
     method,
     headers: {
       'Content-Type': 'application/json',
-      'Host': 'kong.domestic.local',
+      'Host': 'gateway.domestic.local',
     },
   };
 

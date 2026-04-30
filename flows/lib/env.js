@@ -25,7 +25,7 @@ function loadEnv(envPath) {
 }
 
 function resolveEnvFile(arg) {
-  const scriptDir = __dirname;
+  const scriptDir = path.join(__dirname, '..');
   const envPath = arg || path.join(scriptDir, '.env');
   return envPath;
 }
