@@ -151,6 +151,16 @@ O dnsmasq na máquina resolve `*.domestic.local → 192.168.1.200` automaticamen
 curl -H "Host: kong.domestic.local" http://192.168.1.200/sua-rota
 ```
 
+## Verification System
+
+User/Provider verification uses the User `document` field (CPF/document number) for tracking identity documents during registration. The API provides verification endpoints for:
+
+- **Email verification** — `POST /auth/verify/email` — check if email is already registered
+- **Phone verification** — `POST /auth/verify/phone` — check if phone is already registered  
+- **Document verification** — `POST /auth/verify/document` — check if document (CPF) is already registered
+
+These endpoints normalize input (remove formatting) and query the `users.document` column. The `document` field in the User entity is added via migration `1763600000022-add-document-to-users.ts`.
+
 ## Web Panels
 
 | Service | URL | User | Password |
