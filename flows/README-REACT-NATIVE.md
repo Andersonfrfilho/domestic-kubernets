@@ -601,8 +601,6 @@ The `layout` array contains screen components for Server-Driven UI rendering:
 
 ### 5.2 Search
 
-> **Note:** Currently returns 500 — pre-existing bug in the search service.
-
 ```bash
 curl -H "Host: gateway.domestic.local" \
   "http://192.168.3.203/bff/search?q=eletricista&category=home-services&page=1&limit=20"
@@ -921,6 +919,7 @@ All routes are served through Kong at `http://192.168.3.203` (or `http://gateway
 | `bff-onboarding-public-route` | `/bff/onboarding/register`<br>`/bff/onboarding/verification/send`<br>`/bff/onboarding/verification/verify`<br>`/bff/onboarding/cep/*`<br>`/bff/onboarding/documents/upload` | BFF |
 | `bff-terms-public-route` | `/bff/auth/terms/current`<br>`/bff/auth/terms/versions`<br>`/bff/auth/terms/check-pending`<br>`/bff/auth/terms/accept` | BFF |
 | `bff-public-route` | `/bff/app-config`<br>`/bff/home`<br>`/bff/search`<br>`/bff/health` | BFF |
+| `api-public-route` | `/v1/categories`<br>`/v1/services`<br>`/v1/providers` | API |
 | `auth-route` | `/auth/*` | Keycloak (login, token, etc.) |
 | `account-route` | `/account/*` | Keycloak (password reset) |
 
@@ -991,3 +990,26 @@ All databases are accessible through the Ingress Controller using DNS names:
 | **MinIO** | `http://192.168.3.60:30901` | `domestic` | `minioadmin` |
 | **Keycloak** | `http://keycloak.domestic.local` | `domestic` | `admin` |
 | **ArgoCD** | `http://argocd.domestic.local` | `admin` | *(auto-generated)* |
+
+---
+
+## Route Test Results (2026-05-01)
+
+All routes tested via Kong (`Host: gateway.domestic.local`) at `http://192.168.3.203`.
+
+| # | Route | Method | Status | Notes |
+|---|---|---|---|---|
+| 1 | `/bff/app-config` | GET | ✅ 200 | Returns tab bar config, feature flags, version |
+| 2 | `/bff/health` | GET | ✅ 200 | `{"status":true}` |
+| 3 | `/bff/home` | GET | ✅ 200 | 8 categories, 2 featured providers |
+| 4 | `/bff/search?q=eletricista` | GET | ✅ 200 | Returns matching providers |
+| 5 | `/bff/auth/terms/current` | GET | ✅ 200 | Returns v1.0.0 terms |
+| 6 | `/bff/auth/terms/versions` | GET | ✅ 200 | Returns list of all versions |
+| 7 | `/bff/auth/terms/check-pending` | POST | ⚠️ 400 | Expected for invalid userId (needs valid UUID) |
+| 8 | `/bff/auth/terms/accept` | POST | ⚠️ 400 | Expected for invalid userId (needs valid UUID) |
+| 9 | `/bff/onboarding/verification/send` | POST | ✅ 200 | QA Mode: code `0000` |
+| 10 | `/bff/onboarding/verification/verify` | POST | ✅ 200 | `{"verified":true}` |
+| 11 | `/bff/onboarding/cep/01001000` | GET | ✅ 200 | Returns São Paulo address |
+| 12 | `/bff/auth/forgot-password` | POST | ⚠️ 404 | Expected for non-existent email |
+| 13 | `/v1/categories` | GET | ✅ 200 | 8 categories (Limpeza, Encanamento, etc.) |
+| 14 | `/v1/providers?sort=rating&available=true` | GET | ✅ 200 | 2 providers with services, location |

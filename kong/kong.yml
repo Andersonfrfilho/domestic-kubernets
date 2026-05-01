@@ -69,6 +69,19 @@ services:
           - /api
         strip_path: true
 
+  # ── API REST — Rotas públicas (sem JWT) ───────────────────────────────────
+  - name: api-public-service
+    url: http://api:3000
+    routes:
+      - name: api-public-route
+        paths:
+          - /v1/categories
+          - /v1/services
+          - /v1/providers
+        strip_path: false
+        methods:
+          - GET
+
   # ── BFF — Backend for Frontend ──────────────────────────────────────────
   - name: bff-service
     url: http://bff:3001
