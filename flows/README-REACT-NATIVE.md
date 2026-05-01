@@ -487,6 +487,8 @@ curl -X POST -H "Host: gateway.domestic.local" \
 
 ### 5.1 Home Screen
 
+Returns SDUI layout + featured categories + featured providers. Used as the main tab screen.
+
 ```bash
 curl -H "Host: gateway.domestic.local" \
   http://192.168.3.203/bff/home
@@ -495,11 +497,107 @@ curl -H "Host: gateway.domestic.local" \
 **Success (200):**
 ```json
 {
-  "layout": { ... },
-  "featuredCategories": [ ... ],
-  "featuredProviders": [ ... ]
+  "layout": [
+    {
+      "id": "categories",
+      "type": "category_list",
+      "order": 0,
+      "config": { "scroll": "horizontal", "showSeeAll": true },
+      "action": { "type": "navigate", "route": "/search?category={slug}" },
+      "data": [
+        { "id": "uuid", "name": "Limpeza", "slug": "limpeza", "iconUrl": null },
+        { "id": "uuid", "name": "Encanamento", "slug": "encanamento", "iconUrl": null }
+      ]
+    },
+    {
+      "id": "featured_providers",
+      "type": "provider_grid",
+      "order": 1,
+      "config": { "columns": 2, "showRating": true },
+      "action": { "type": "navigate", "route": "/providers/{id}" },
+      "data": [
+        {
+          "id": "uuid",
+          "businessName": "Maria Servicos Domesticos",
+          "averageRating": 4.9,
+          "reviewCount": 127,
+          "services": [
+            { "name": "Limpeza residencial", "priceBase": 150, "priceType": "FIXED" }
+          ],
+          "city": "Sao Paulo",
+          "state": "SP",
+          "latitude": "-23.550520",
+          "longitude": "-46.633308",
+          "isAvailable": true
+        }
+      ]
+    }
+  ],
+  "featuredCategories": [
+    { "id": "uuid", "name": "Limpeza", "slug": "limpeza", "iconUrl": null }
+  ],
+  "featuredProviders": [
+    {
+      "id": "uuid",
+      "businessName": "Maria Servicos Domesticos",
+      "averageRating": 4.9,
+      "reviewCount": 127,
+      "services": [
+        { "name": "Limpeza residencial", "priceBase": 150, "priceType": "FIXED" }
+      ],
+      "city": "Sao Paulo",
+      "state": "SP",
+      "latitude": "-23.550520",
+      "longitude": "-46.633308",
+      "isAvailable": true
+    }
+  ]
 }
 ```
+
+#### FeaturedProvider Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | `string` | Provider UUID |
+| `businessName` | `string` | Provider business/display name |
+| `averageRating` | `number` | Average rating (0-5) |
+| `reviewCount` | `number` | Total number of reviews |
+| `services` | `ProviderService[]` | Services offered with pricing |
+| `services[].name` | `string` | Service name |
+| `services[].priceBase` | `number` | Base price |
+| `services[].priceType` | `string` | `FIXED`, `HOURLY`, or `VARIABLE` |
+| `city` | `string` | Provider city |
+| `state` | `string` | Provider state (2-letter code) |
+| `latitude` | `string` | Latitude for map display |
+| `longitude` | `string` | Longitude for map display |
+| `isAvailable` | `boolean` | Whether provider accepts new requests |
+
+#### FeaturedCategory Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | `string` | Category UUID |
+| `name` | `string` | Display name (e.g., "Limpeza") |
+| `slug` | `string` | URL-friendly name (e.g., "limpeza") |
+| `iconUrl` | `string \| null` | Icon URL (may be null) |
+
+#### SDUI Layout Components
+
+The `layout` array contains screen components for Server-Driven UI rendering:
+
+| Component Type | Config Keys | Action Types |
+|---|---|---|
+| `search_bar` | `placeholder` | `null` |
+| `category_list` | `scroll`, `showSeeAll` | `navigate` → `/search?category={slug}` |
+| `category_grid` | `columns`, `showSeeAll` | `navigate` → `/search?category={slug}` |
+| `provider_grid` | `columns`, `showRating` | `navigate` → `/providers/{id}` |
+| `provider_list` | `showRating` | `navigate` → `/providers/{id}` |
+| `banner_carousel` | `auto_play`, `interval` | `external_link` → `url` |
+
+**Action templates** support `{field}` substitution from the item data:
+- `/providers/{id}` → `/providers/059d690e-aada-479a-980f-bd615846940e`
+- `/search?category={slug}` → `/search?category=limpeza`
 
 ### 5.2 Search
 
@@ -630,11 +728,62 @@ curl -H "Host: gateway.domestic.local" \
 ```json
 {
   "businessName": "Joao Servicos Eletricos",
-  "services": [ ... ],
-  "workLocations": [ ... ],
-  "recentReviews": [ ... ],
-  "averageRating": 4.8
+  "description": "Servicos eletricos residenciais e comerciais...",
+  "averageRating": 4.8,
+  "reviewCount": 23,
+  "city": "Sao Paulo",
+  "state": "SP",
+  "latitude": "-23.550520",
+  "longitude": "-46.633308",
+  "isAvailable": true,
+  "services": [
+    { "id": "uuid", "name": "Instalacao eletrica", "priceBase": 120, "priceType": "FIXED" }
+  ],
+  "workLocations": [
+    { "id": "uuid", "name": "Escritorio Central", "city": "Sao Paulo", "state": "SP" }
+  ],
+  "recentReviews": [
+    { "id": "uuid", "rating": 5, "comment": "Excelente servico!", "createdAt": "2026-04-30T15:00:00Z" }
+  ]
 }
+```
+
+### 5.8 List Providers (API Direct)
+
+For custom filtering beyond the home endpoint. Accessible via Kong.
+
+```bash
+# List providers sorted by rating, limited to 10, only available
+curl -H "Host: gateway.domestic.local" \
+  "http://192.168.3.203/v1/providers?sort=rating&limit=10&available=true"
+```
+
+**Query Parameters:**
+
+| Param | Type | Description |
+|---|---|---|
+| `sort` | `string` | Sort field: `rating` (default: `created_at`) |
+| `limit` | `number` | Max results |
+| `available` | `boolean` | Filter only available providers |
+
+**Success (200):**
+```json
+[
+  {
+    "id": "uuid",
+    "businessName": "Maria Servicos",
+    "averageRating": "4.9",
+    "isAvailable": true,
+    "city": "Sao Paulo",
+    "state": "SP",
+    "latitude": "-23.550520",
+    "longitude": "-46.633308",
+    "services": [
+      { "id": "uuid", "name": "Limpeza", "priceBase": 150, "priceType": "FIXED" }
+    ],
+    "reviewCount": 127
+  }
+]
 ```
 
 ---
@@ -804,13 +953,15 @@ BFF receives: POST /bff/onboarding/register
 
 ### External Access (via Ingress TCP Passthrough)
 
-All databases are accessible through the Ingress Controller at `192.168.3.203`:
+All databases are accessible through the Ingress Controller using DNS names:
 
-| Database | Host | Port | User | Password | Connection String |
+| Database | DNS Link | Port | User | Password | Connection String |
 |---|---|---|---|---|---|
-| **PostgreSQL** | `192.168.3.203` | `5432` | `domestic` | `postgres1234` | `postgresql://domestic:postgres1234@192.168.3.203:5432/domestic_postgres` |
-| **MongoDB** | `192.168.3.203` | `27017` | — | — | `mongodb://192.168.3.203:27017/domestic_mongo` |
-| **Redis** | `192.168.3.203` | `6379` | — | — | `redis://192.168.3.203:6379` |
+| **PostgreSQL** | `postgres.domestic.local` | `5432` | `domestic` | `postgres1234` | `postgresql://domestic:postgres1234@postgres.domestic.local:5432/domestic_postgres` |
+| **MongoDB** | `mongo.domestic.local` | `27017` | — | — | `mongodb://mongo.domestic.local:27017/domestic_mongo` |
+| **Redis** | `redis.domestic.local` | `6379` | — | — | `redis://redis.domestic.local:6379` |
+
+> DNS `*.domestic.local` resolve para `192.168.3.203` via dnsmasq.
 
 ### DataGrip Connection Setup
 
