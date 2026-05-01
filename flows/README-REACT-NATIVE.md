@@ -797,3 +797,46 @@ BFF receives: POST /bff/onboarding/register
 ```
 
 **Important:** `strip_path: false` means the BFF receives the full path including `/bff/...`. This is why all BFF controllers use `@Controller('bff/...')` prefix.
+
+---
+
+## Database Connections
+
+### External Access (via Ingress TCP Passthrough)
+
+All databases are accessible through the Ingress Controller at `192.168.3.203`:
+
+| Database | Host | Port | User | Password | Connection String |
+|---|---|---|---|---|---|
+| **PostgreSQL** | `192.168.3.203` | `5432` | `domestic` | `postgres1234` | `postgresql://domestic:postgres1234@192.168.3.203:5432/domestic_postgres` |
+| **MongoDB** | `192.168.3.203` | `27017` | — | — | `mongodb://192.168.3.203:27017/domestic_mongo` |
+| **Redis** | `192.168.3.203` | `6379` | — | — | `redis://192.168.3.203:6379` |
+
+### DataGrip Connection Setup
+
+1. **PostgreSQL**
+   - Host: `192.168.3.203`
+   - Port: `5432`
+   - User: `domestic`
+   - Password: `postgres1234`
+   - Database: `domestic_postgres`
+
+2. **MongoDB**
+   - Host: `192.168.3.203`
+   - Port: `27017`
+   - Database: `domestic_mongo`
+   - Auth: None
+
+3. **Redis**
+   - Host: `192.168.3.203`
+   - Port: `6379`
+   - Auth: None
+
+### Web Panels
+
+| Service | URL | User | Password |
+|---|---|---|---|
+| **RabbitMQ** | `http://192.168.3.60:30672` | `domestic` | `backendapi123` |
+| **MinIO** | `http://192.168.3.60:30901` | `domestic` | `minioadmin` |
+| **Keycloak** | `http://keycloak.domestic.local` | `domestic` | `admin` |
+| **ArgoCD** | `http://argocd.domestic.local` | `admin` | *(auto-generated)* |
