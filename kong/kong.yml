@@ -103,6 +103,64 @@ services:
           - /bff/onboarding/cep
           - /bff/onboarding/documents/upload
         strip_path: false
+
+      # Rotas de verificação de campos (com rate limiting)
+      - name: bff-verify-email-route
+        regex_priority: 96
+        paths:
+          - /bff/onboarding/verify/email
+        strip_path: false
+        methods:
+          - POST
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+              fault_tolerant: true
+              header_name: X-RateLimit-Remaining
+              hide_client_headers: false
+              error_code: 429
+              error_message: |
+                {"statusCode":429,"error":"RATE_LIMIT_EXCEEDED","message":"Muitas tentativas. Tente novamente em alguns minutos.","field":"email"}
+
+      - name: bff-verify-phone-route
+        regex_priority: 96
+        paths:
+          - /bff/onboarding/verify/phone
+        strip_path: false
+        methods:
+          - POST
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+              fault_tolerant: true
+              header_name: X-RateLimit-Remaining
+              hide_client_headers: false
+              error_code: 429
+              error_message: |
+                {"statusCode":429,"error":"RATE_LIMIT_EXCEEDED","message":"Muitas tentativas. Tente novamente em alguns minutos.","field":"phone"}
+
+      - name: bff-verify-document-route
+        regex_priority: 96
+        paths:
+          - /bff/onboarding/verify/document
+        strip_path: false
+        methods:
+          - POST
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 3
+              policy: local
+              fault_tolerant: true
+              header_name: X-RateLimit-Remaining
+              hide_client_headers: false
+              error_code: 429
+              error_message: |
+                {"statusCode":429,"error":"RATE_LIMIT_EXCEEDED","message":"Muitas tentativas. Tente novamente em alguns minutos.","field":"document"}
       
       # Rotas públicas de Terms (versão atual, lista, check-pending, accept)
       - name: bff-terms-public-route

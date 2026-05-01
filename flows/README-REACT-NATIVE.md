@@ -250,33 +250,128 @@ curl -X POST -H "Host: gateway.domestic.local" \
 }
 ```
 
-### 3.2 Verify Code
+### 3.3 Field Verification (Real-time)
+
+Endpoints para verificar disponibilidade de campos em tempo real durante o cadastro. Usar com **debounce** no frontend (500ms).
+
+#### Verificar Email
 
 ```bash
 curl -X POST -H "Host: gateway.domestic.local" \
   -H "Content-Type: application/json" \
-  -d '{"destination": "user@example.com", "type": "email", "code": "0000"}' \
-  http://192.168.3.203/bff/onboarding/verification/verify
+  -d '{"email": "usuario@email.com"}' \
+  http://192.168.3.203/bff/onboarding/verify/email
 ```
 
-**Success (200):**
+**Success (200) — Available:**
 ```json
 {
-  "success": true,
-  "verified": true,
-  "message": "Codigo verificado com sucesso"
+  "available": true,
+  "valid": true,
+  "field": "email"
 }
 ```
 
-**Error (400) — Invalid/expired code:**
+**Error (409) — Already exists:**
 ```json
 {
-  "statusCode": 400,
-  "message": "Codigo invalido ou expirado"
+  "statusCode": 409,
+  "error": "EMAIL_ALREADY_EXISTS",
+  "message": "E-mail já está em uso",
+  "field": "email"
 }
 ```
 
-### 3.3 Register User
+#### Verificar Telefone
+
+```bash
+curl -X POST -H "Host: gateway.domestic.local" \
+  -H "Content-Type: application/json" \
+  -d '{"phone": "11999999999"}' \
+  http://192.168.3.203/bff/onboarding/verify/phone
+```
+
+**Success (200) — Available:**
+```json
+{
+  "available": true,
+  "valid": true,
+  "field": "phone"
+}
+```
+
+**Error (409) — Already exists:**
+```json
+{
+  "statusCode": 409,
+  "error": "PHONE_ALREADY_EXISTS",
+  "message": "Telefone já está cadastrado",
+  "field": "phone"
+}
+```
+
+#### Verificar Documento (CPF/CNPJ)
+
+```bash
+curl -X POST -H "Host: gateway.domestic.local" \
+  -H "Content-Type: application/json" \
+  -d '{"document": "12345678909"}' \
+  http://192.168.3.203/bff/onboarding/verify/document
+```
+
+**Success (200) — Available:**
+```json
+{
+  "available": true,
+  "valid": true,
+  "field": "document"
+}
+```
+
+**Error (409) — Already exists:**
+```json
+{
+  "statusCode": 409,
+  "error": "DOCUMENT_ALREADY_EXISTS",
+  "message": "Documento já está cadastrado",
+  "field": "document"
+}
+```
+
+#### Rate Limiting
+
+| Endpoint | Limit | Window |
+|---|---|---|
+| `/verify/email` | 5 requests | 1 minute |
+| `/verify/phone` | 5 requests | 1 minute |
+| `/verify/document` | 3 requests | 1 minute |
+
+Response headers included:
+```
+RateLimit-Limit: 5
+RateLimit-Remaining: 3
+RateLimit-Reset: 45
+X-RateLimit-Limit-Minute: 5
+X-RateLimit-Remaining-Minute: 3
+```
+
+**Error (429) — Rate limit exceeded:**
+```json
+{
+  "message": "{\"statusCode\":429,\"error\":\"RATE_LIMIT_EXCEEDED\",\"message\":\"Muitas tentativas. Tente novamente em alguns minutos.\",\"field\":\"email\"}",
+  "request_id": "abc123..."
+}
+```
+
+Parse o campo `message` para obter os detalhes:
+```typescript
+if (response.status === 429) {
+  const error = JSON.parse(data.message);
+  // error.statusCode, error.error, error.message, error.field
+}
+```
+
+### 3.4 Register User
 
 ```bash
 curl -X POST -H "Host: gateway.domestic.local" \
@@ -370,6 +465,298 @@ curl -X POST -H "Host: gateway.domestic.local" \
   "documentId": "abc123"
 }
 ```
+
+---
+
+## Frontend Integration: Field Verification
+
+### Hook `useFieldVerification`
+
+```typescript
+// src/modules/auth/hooks/useFieldVerification.ts
+import { useState, useRef, useCallback } from 'react';
+import { apiClient } from '@/shared/services/api-client';
+
+interface VerificationState {
+  isChecking: boolean;
+  isAvailable: boolean | null;
+  error: string | null;
+  isRateLimited: boolean;
+}
+
+interface RateLimitInfo {
+  remaining: number;
+  limit: number;
+  resetSeconds: number;
+}
+
+export function useFieldVerification() {
+  const [fields, setFields] = useState<Record<string, VerificationState>>({
+    email: { isChecking: false, isAvailable: null, error: null, isRateLimited: false },
+    phone: { isChecking: false, isAvailable: null, error: null, isRateLimited: false },
+    document: { isChecking: false, isAvailable: null, error: null, isRateLimited: false },
+  });
+
+  const [rateLimitInfo, setRateLimitInfo] = useState<Record<string, RateLimitInfo>>({});
+
+  const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
+  const abortControllers = useRef<Record<string, AbortController>>({});
+
+  const parseRateLimitHeaders = (headers: Headers, field: string) => {
+    const limit = parseInt(headers.get('RateLimit-Limit') || '0', 10);
+    const remaining = parseInt(headers.get('RateLimit-Remaining') || '0', 10);
+    const reset = parseInt(headers.get('RateLimit-Reset') || '0', 10);
+
+    if (limit > 0) {
+      setRateLimitInfo(prev => ({
+        ...prev,
+        [field]: { limit, remaining, resetSeconds: reset },
+      }));
+    }
+  };
+
+  const parseRateLimitError = (data: any): { message: string; retryAfter?: number } => {
+    try {
+      const parsed = typeof data.message === 'string' ? JSON.parse(data.message) : data.message;
+      return {
+        message: parsed.message || 'Muitas tentativas. Tente novamente.',
+        retryAfter: parsed.retryAfter,
+      };
+    } catch {
+      return { message: data.message || 'Muitas tentativas. Tente novamente.' };
+    }
+  };
+
+  const verifyField = useCallback(async (field: string, value: string) => {
+    if (abortControllers.current[field]) {
+      abortControllers.current[field].abort();
+    }
+
+    const controller = new AbortController();
+    abortControllers.current[field] = controller;
+
+    setFields(prev => ({
+      ...prev,
+      [field]: { isChecking: true, isAvailable: null, error: null, isRateLimited: false },
+    }));
+
+    try {
+      const response = await apiClient.post(
+        `/bff/onboarding/verify/${field}`,
+        { [field]: value },
+        { signal: controller.signal },
+      );
+
+      parseRateLimitHeaders(response.headers, field);
+
+      setFields(prev => ({
+        ...prev,
+        [field]: {
+          isChecking: false,
+          isAvailable: response.data.available && response.data.valid,
+          error: null,
+          isRateLimited: false,
+        },
+      }));
+
+      return { success: true, available: response.data.available };
+    } catch (error: any) {
+      if (error.name === 'AbortError') return null;
+
+      if (error.response?.status === 409) {
+        setFields(prev => ({
+          ...prev,
+          [field]: {
+            isChecking: false,
+            isAvailable: false,
+            error: error.response.data.message,
+            isRateLimited: false,
+          },
+        }));
+        return { success: false, available: false, error: error.response.data.message };
+      }
+
+      if (error.response?.status === 429) {
+        const { message } = parseRateLimitError(error.response.data);
+        setFields(prev => ({
+          ...prev,
+          [field]: {
+            isChecking: false,
+            isAvailable: null,
+            error: message,
+            isRateLimited: true,
+          },
+        }));
+        return { success: false, rateLimited: true, error: message };
+      }
+
+      if (error.response?.status === 400) {
+        const validationErrors = error.response.data?.details?.validationErrors || [];
+        const errorMessage = validationErrors[0]?.constraints
+          ? Object.values(validationErrors[0].constraints)[0] as string
+          : 'Formato inválido';
+
+        setFields(prev => ({
+          ...prev,
+          [field]: {
+            isChecking: false,
+            isAvailable: null,
+            error: errorMessage,
+            isRateLimited: false,
+          },
+        }));
+        return { success: false, error: errorMessage };
+      }
+
+      setFields(prev => ({
+        ...prev,
+        [field]: { isChecking: false, isAvailable: null, error: null, isRateLimited: false },
+      }));
+
+      return null;
+    }
+  }, []);
+
+  const verifyWithDebounce = useCallback((field: string, value: string, delay = 500) => {
+    if (debounceTimers.current[field]) {
+      clearTimeout(debounceTimers.current[field]);
+    }
+
+    const cleanedValue = value.replace(/\D/g, '');
+    const minLengths: Record<string, number> = { email: 5, phone: 10, document: 8 };
+    const minLength = minLengths[field] || 1;
+
+    if (!value || cleanedValue.length < minLength) {
+      setFields(prev => ({
+        ...prev,
+        [field]: { isChecking: false, isAvailable: null, error: null, isRateLimited: false },
+      }));
+      return;
+    }
+
+    if (fields[field]?.isRateLimited) return;
+
+    debounceTimers.current[field] = setTimeout(() => {
+      verifyField(field, value);
+    }, delay);
+  }, [fields, verifyField]);
+
+  const resetField = useCallback((field: string) => {
+    setFields(prev => ({
+      ...prev,
+      [field]: { isChecking: false, isAvailable: null, error: null, isRateLimited: false },
+    }));
+  }, []);
+
+  return {
+    fields,
+    rateLimitInfo,
+    verifyWithDebounce,
+    resetField,
+  };
+}
+```
+
+### Usage in RegisterScreen
+
+```typescript
+// src/modules/auth/screens/register/register.screen.tsx
+import { useFieldVerification } from '@/modules/auth/hooks/useFieldVerification';
+
+export default function RegisterScreen() {
+  const { fields, rateLimitInfo, verifyWithDebounce, resetField } = useFieldVerification();
+
+  const handleEmailChange = (value: string) => {
+    verifyWithDebounce('email', value, 500);
+  };
+
+  const handlePhoneChange = (value: string) => {
+    verifyWithDebounce('phone', value.replace(/\D/g, ''), 500);
+  };
+
+  const handleDocumentChange = (value: string) => {
+    verifyWithDebounce('document', value.replace(/\D/g, ''), 500);
+  };
+
+  return (
+    <RegisterForm
+      control={control}
+      errors={errors}
+      fieldStatus={fields}
+      rateLimitInfo={rateLimitInfo}
+      onEmailChange={handleEmailChange}
+      onPhoneChange={handlePhoneChange}
+      onDocumentChange={handleDocumentChange}
+    />
+  );
+}
+```
+
+### UI Components
+
+```typescript
+// FieldStatusIndicator.tsx
+interface FieldStatusIndicatorProps {
+  field: string;
+  status: VerificationState;
+}
+
+export function FieldStatusIndicator({ status }: FieldStatusIndicatorProps) {
+  if (status.isChecking) {
+    return (
+      <View style={styles.checkingIndicator}>
+        <ActivityIndicator size="small" color={theme.colors.primary.DEFAULT} />
+        <Text style={styles.checkingText}>Verificando...</Text>
+      </View>
+    );
+  }
+
+  if (status.isRateLimited) {
+    return (
+      <View style={styles.rateLimitContainer}>
+        <Ionicons name="time-outline" size={14} color={theme.colors.warning} />
+        <Text style={styles.rateLimitText}>{status.error}</Text>
+      </View>
+    );
+  }
+
+  if (status.isAvailable === false && status.error) {
+    return (
+      <View style={styles.fieldErrorContainer}>
+        <Ionicons name="alert-circle" size={14} color={theme.colors.status.error} />
+        <Text style={styles.fieldErrorMessage}>{status.error}</Text>
+        {status.error.includes('E-mail') && (
+          <TouchableOpacity onPress={() => router.push('/forgot-password')}>
+            <Text style={styles.forgotPasswordLink}>Esqueci minha senha</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  }
+
+  if (status.isAvailable === true) {
+    return (
+      <View style={styles.successIndicator}>
+        <Ionicons name="checkmark-circle" size={14} color={theme.colors.status.success} />
+        <Text style={styles.successText}>Disponível</Text>
+      </View>
+    );
+  }
+
+  return null;
+}
+```
+
+### Error Handling Summary
+
+| Scenario | HTTP Status | Frontend Action |
+|---|---|---|
+| Field available | 200 | Show green checkmark |
+| Field already exists | 409 | Show error + "Esqueci minha senha" link (email) |
+| Invalid format | 400 | Show validation error inline |
+| Rate limit exceeded | 429 | Show warning, disable verification, parse `message` JSON |
+| Network error | — | Silent fail, don't show error |
+| User keeps typing | — | Cancel previous request (AbortController) |
 
 ---
 
@@ -863,22 +1250,34 @@ All errors follow this structure:
     Body: { destination: "email", type: "email", code: "0000" }
     → Verify code
 
-5. POST /bff/onboarding/register
+5. POST /bff/onboarding/verify/email
+    Body: { email: "user@example.com" }
+    → Check if email is available (debounced, 500ms)
+
+6. POST /bff/onboarding/verify/phone
+    Body: { phone: "11999999999" }
+    → Check if phone is available (debounced, 500ms)
+
+7. POST /bff/onboarding/verify/document
+    Body: { document: "12345678909" }
+    → Check if CPF/CNPJ is available (debounced, 500ms)
+
+8. POST /bff/onboarding/register
     Body: { email, password, firstName, lastName, phone, cpf }
     → Create user in Keycloak + API
     Response: { keycloakId, email, success, message }
 
-6. POST /bff/auth/terms/check-pending
+9. POST /bff/auth/terms/check-pending
     Body: { userId: "<keycloakId>" }
     → Check if user needs to accept terms
     Response: { hasPending: true, currentVersion: "1.0.0", lastAcceptedVersion: null }
 
-7. POST /bff/auth/terms/accept
+10. POST /bff/auth/terms/accept
     Body: { userId: "<keycloakId>", termsVersionId: "<version-id>" }
     → Accept terms
     Response: { success: true, message: "Termos de uso aceitos", termsVersion: "1.0.0" }
 
-8. → Navigate to Main App (Tab Bar)
+11. → Navigate to Main App (Tab Bar)
 ```
 
 ---
@@ -917,6 +1316,9 @@ All routes are served through Kong at `http://192.168.3.203` (or `http://gateway
 |---|---|---|
 | `bff-auth-route` | `/bff/auth/*` | BFF (`/bff/auth/forgot-password`) |
 | `bff-onboarding-public-route` | `/bff/onboarding/register`<br>`/bff/onboarding/verification/send`<br>`/bff/onboarding/verification/verify`<br>`/bff/onboarding/cep/*`<br>`/bff/onboarding/documents/upload` | BFF |
+| `bff-verify-email-route` | `/bff/onboarding/verify/email` | BFF (rate limit: 5/min) |
+| `bff-verify-phone-route` | `/bff/onboarding/verify/phone` | BFF (rate limit: 5/min) |
+| `bff-verify-document-route` | `/bff/onboarding/verify/document` | BFF (rate limit: 3/min) |
 | `bff-terms-public-route` | `/bff/auth/terms/current`<br>`/bff/auth/terms/versions`<br>`/bff/auth/terms/check-pending`<br>`/bff/auth/terms/accept` | BFF |
 | `bff-public-route` | `/bff/app-config`<br>`/bff/home`<br>`/bff/search`<br>`/bff/health` | BFF |
 | `api-public-route` | `/v1/categories`<br>`/v1/services`<br>`/v1/providers` | API |
@@ -1011,5 +1413,13 @@ All routes tested via Kong (`Host: gateway.domestic.local`) at `http://192.168.3
 | 10 | `/bff/onboarding/verification/verify` | POST | ✅ 200 | `{"verified":true}` |
 | 11 | `/bff/onboarding/cep/01001000` | GET | ✅ 200 | Returns São Paulo address |
 | 12 | `/bff/auth/forgot-password` | POST | ⚠️ 404 | Expected for non-existent email |
-| 13 | `/v1/categories` | GET | ✅ 200 | 8 categories (Limpeza, Encanamento, etc.) |
-| 14 | `/v1/providers?sort=rating&available=true` | GET | ✅ 200 | 2 providers with services, location |
+| 13 | `/bff/onboarding/verify/email` | POST | ✅ 200 | `{"available":true,"valid":true,"field":"email"}` |
+| 14 | `/bff/onboarding/verify/phone` | POST | ✅ 200 | `{"available":true,"valid":true,"field":"phone"}` |
+| 15 | `/bff/onboarding/verify/document` | POST | ✅ 200 | `{"available":true,"valid":true,"field":"document"}` |
+| 16 | `/bff/onboarding/verify/email` (6th req) | POST | ✅ 429 | Rate limit triggered, custom error message |
+| 17 | `/bff/onboarding/verify/document` (4th req) | POST | ✅ 429 | Rate limit triggered (3/min limit) |
+| 18 | `/bff/onboarding/verify/email` (invalid) | POST | ✅ 400 | Validation error: "Formato de e-mail inválido" |
+| 19 | `/bff/onboarding/verify/phone` (invalid) | POST | ✅ 400 | Validation error: "Telefone deve conter 10 ou 11 dígitos" |
+| 20 | `/bff/onboarding/verify/document` (invalid) | POST | ✅ 400 | Validation error: "Documento deve conter entre 8 e 20 caracteres" |
+| 21 | `/v1/categories` | GET | ✅ 200 | 8 categories (Limpeza, Encanamento, etc.) |
+| 22 | `/v1/providers?sort=rating&available=true` | GET | ✅ 200 | 2 providers with services, location |
