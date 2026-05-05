@@ -1175,15 +1175,43 @@ curl -H "Host: gateway.domestic.local" \
 
 ## Error Response Format
 
-All errors follow this structure:
+All errors follow a unified enriched structure designed for the frontend to render user-friendly error screens:
+
+```typescript
+interface ErrorResponse {
+  status: number;           // HTTP status code
+  code: string;             // Machine-readable error code
+  type: string;             // Error category
+  message: string;          // Technical message (for debugging)
+  title: string;            // User-friendly title
+  description: string;      // User-friendly explanation
+  action: string;           // Suggested user action
+  severity: string;         // 'warning' | 'error' | 'critical'
+  ui_component: string;     // 'form_error' | 'auth_modal' | 'modal' | 'toast' | 'fullscreen_error'
+  retryable: boolean;       // Whether the user can retry
+  request_id: string;       // Correlation ID for support
+  timestamp: string;        // ISO 8601 timestamp
+  path: string;             // Request path
+  details?: unknown;        // Additional context (validation errors, etc.)
+}
+```
 
 ### Validation Error (400)
 ```json
 {
-  "statusCode": 400,
+  "status": 400,
+  "code": "VALIDATION_ERROR",
+  "type": "VALIDATION",
+  "message": "Validation failed",
+  "title": "Dados inválidos",
+  "description": "Alguns campos estão incorretos ou incompletos. Verifique e tente novamente.",
+  "action": "Corrija os campos destacados e tente novamente.",
+  "severity": "warning",
+  "ui_component": "form_error",
+  "retryable": false,
+  "request_id": "abc123",
   "timestamp": "2026-04-30T17:45:09.429Z",
   "path": "/bff/onboarding/register",
-  "message": "Validation failed",
   "details": {
     "validationErrors": [
       { "field": "fieldName", "constraints": { "rule": "error message" } }
@@ -1196,40 +1224,90 @@ All errors follow this structure:
 ### Not Found (404)
 ```json
 {
-  "statusCode": 404,
+  "status": 404,
+  "code": "NOT_FOUND",
+  "type": "NOT_FOUND",
+  "message": "Cannot GET /bff/nonexistent",
+  "title": "Não encontrado",
+  "description": "O recurso solicitado não foi encontrado.",
+  "action": "Verifique se o endereço está correto ou volte ao início.",
+  "severity": "warning",
+  "ui_component": "modal",
+  "retryable": false,
+  "request_id": "abc123",
   "timestamp": "2026-04-30T17:45:09.429Z",
-  "path": "/bff/onboarding/cep/00000000",
-  "message": "CEP nao encontrado"
+  "path": "/bff/nonexistent"
 }
 ```
 
 ### Conflict (409)
 ```json
 {
-  "statusCode": 409,
+  "status": 409,
+  "code": "CONFLICT",
+  "type": "CONFLICT",
+  "message": "E-mail ja esta em uso",
+  "title": "Conflito detectado",
+  "description": "Já existe um registro com estas informações.",
+  "action": "Verifique os dados ou use a opção de recuperação.",
+  "severity": "warning",
+  "ui_component": "modal",
+  "retryable": false,
+  "request_id": "abc123",
   "timestamp": "2026-04-30T17:45:09.429Z",
-  "path": "/bff/onboarding/register",
-  "message": "E-mail ja esta em uso"
+  "path": "/bff/onboarding/register"
 }
 ```
 
 ### Unauthorized (401)
 ```json
 {
-  "statusCode": 401,
-  "message": "Unauthorized"
+  "status": 401,
+  "code": "UNAUTHORIZED",
+  "type": "AUTHENTICATION",
+  "message": "Unauthorized",
+  "title": "Acesso negado",
+  "description": "Sua sessão expirou ou as credenciais estão incorretas. Faça login novamente.",
+  "action": "Faça login novamente ou recupere sua senha.",
+  "severity": "error",
+  "ui_component": "auth_modal",
+  "retryable": false,
+  "request_id": "abc123",
+  "timestamp": "2026-04-30T17:45:09.429Z",
+  "path": "/bff/dashboard/contractor"
 }
 ```
 
 ### Internal Server Error (500)
 ```json
 {
-  "statusCode": 500,
+  "status": 500,
+  "code": "INTERNAL_ERROR",
+  "type": "INTERNAL_SERVER",
+  "message": "Falha ao aceitar termos",
+  "title": "Erro interno",
+  "description": "Ocorreu um erro inesperado. Nossa equipe foi notificada.",
+  "action": "Atualize a página ou tente novamente mais tarde.",
+  "severity": "critical",
+  "ui_component": "fullscreen_error",
+  "retryable": true,
+  "request_id": "abc123",
   "timestamp": "2026-04-30T17:45:09.429Z",
-  "path": "/bff/auth/terms/accept",
-  "message": "Falha ao aceitar termos"
+  "path": "/bff/auth/terms/accept"
 }
 ```
+
+### Error Type Mapping
+
+| Type | Status | Severity | UI Component | Retryable | When to Use |
+|---|---|---|---|---|---|
+| `VALIDATION` | 400 | `warning` | `form_error` | No | Field validation errors |
+| `AUTHENTICATION` | 401 | `error` | `auth_modal` | No | Login/session expired |
+| `AUTHORIZATION` | 403 | `error` | `modal` | No | Permission denied |
+| `NOT_FOUND` | 404 | `warning` | `modal` | No | Route/resource not found |
+| `CONFLICT` | 409 | `warning` | `modal` | No | Duplicate data |
+| `BUSINESS_LOGIC` | 422 | `warning` | `toast` | Yes | Business rule violation |
+| `INTERNAL_SERVER` | 500 | `critical` | `fullscreen_error` | Yes | Unexpected server error |
 
 ---
 
@@ -1343,10 +1421,12 @@ strip_path: false → forwards full path to BFF
   ↓
 BFF receives: POST /bff/onboarding/register
   ↓
-@ Controller('bff/onboarding') + @Post('register') → handled
+app.setGlobalPrefix('bff', { exclude: ['health', 'metrics', 'docs'] })
+  ↓
+@Controller('onboarding') + @Post('register') → handled
 ```
 
-**Important:** `strip_path: false` means the BFF receives the full path including `/bff/...`. This is why all BFF controllers use `@Controller('bff/...')` prefix.
+**Important:** `strip_path: false` means Kong forwards the full path `/bff/...` to the BFF. Internally, the BFF uses `app.setGlobalPrefix('bff')` so controllers don't need the `/bff` prefix. Default infrastructure routes (`/health`, `/metrics`, `/docs`) are excluded from the global prefix and remain accessible without `/bff` for probes and Prometheus scraping.
 
 ---
 
