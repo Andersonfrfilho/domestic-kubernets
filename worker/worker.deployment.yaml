@@ -34,7 +34,7 @@ spec:
           # Registry local Ubuntu:  192.168.1.100:5000/domestic-worker:latest
           # Daemon minikube:        domestic-worker:local
           image: ghcr.io/andersonfrfilho/domestic-backend-worker:main
-          imagePullPolicy: Always
+          imagePullPolicy: Never
           ports:
             # Health check e Bull Board (dashboard de filas), se habilitado
             - containerPort: 3002
@@ -52,18 +52,22 @@ spec:
               memory: "512Mi"
               cpu: "500m"
           livenessProbe:
-            httpGet:
-              path: /health
-              port: 3002
-            initialDelaySeconds: 30
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - ps aux | grep "node dist/main" | grep -v grep
+            initialDelaySeconds: 100
             periodSeconds: 30
-            failureThreshold: 3
+            failureThreshold: 5
             timeoutSeconds: 5
           readinessProbe:
-            httpGet:
-              path: /health
-              port: 3002
-            initialDelaySeconds: 15
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - ps aux | grep "node dist/main" | grep -v grep
+            initialDelaySeconds: 90
             periodSeconds: 10
-            failureThreshold: 3
+            failureThreshold: 10
             timeoutSeconds: 5

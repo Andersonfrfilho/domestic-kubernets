@@ -23,7 +23,7 @@ data:
   CACHE_REDIS_HOST: "redis"
   CACHE_REDIS_PORT: "6379"
   # Fila — worker consome mensagens do RabbitMQ
-  QUEUE_RABBITMQ_HOST: "rabbitmq"
+  QUEUE_RABBITMQ_HOST: "10.43.109.15"
   QUEUE_RABBITMQ_PORT: "5672"
   # Storage (para processar uploads, gerar relatórios, etc.)
   STORAGE_MINIO_ENDPOINT: "minio"

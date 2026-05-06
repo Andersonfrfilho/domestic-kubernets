@@ -77,7 +77,11 @@
       "Bash(dig mail.domestic.local)",
       "Bash(grep -v \"127.0.0\\\\|10.42\\\\|172.\\\\|192.168.49\" kubectl logs -n metallb-system -l component=speaker --tail=3)",
       "Bash(grep -v \"^$\")",
-      "Bash(echo \"EXIT: $?\")"
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(grep -E \"\\\\.\\(ts|js\\)$\")",
+      "Bash(rtk find *)",
+      "Bash(rtk npm *)",
+      "Bash(grep -E \"\\\\.ts$\")"
     ]
   }
 }
