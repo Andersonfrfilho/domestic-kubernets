@@ -10,8 +10,6 @@ data:
     vm_memory_high_watermark.relative = 0.6
     disk_free_limit.absolute = 1GB
     listeners.tcp.default = 5672
-    channel_max = 0
-    connection_max = 0
 
   enabled_plugins: |
     [rabbitmq_management].
