@@ -25,6 +25,7 @@ data:
   # Fila — cron pode enfileirar tarefas para o worker processar
   QUEUE_RABBITMQ_HOST: "rabbitmq"
   QUEUE_RABBITMQ_PORT: "5672"
+  RABBITMQ_URL: "amqp://domestic_cron:backendapi123@rabbitmq:5672"
   # Notificações — se o cron dispara emails/push
   STORAGE_MINIO_ENDPOINT: "minio"
   STORAGE_MINIO_PORT: "9000"
