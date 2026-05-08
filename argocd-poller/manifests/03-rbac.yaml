@@ -1,0 +1,41 @@
+# Role no namespace argocd para permitir operações na API do ArgoCD
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: github-poller-appmanager
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: github-actions-poller
+rules:
+# Ler informações de aplicações (para descoberta dinâmica)
+- apiGroups: ["argoproj.io"]
+  resources: ["applications"]
+  verbs: ["get", "list"]
+
+# Disparar refresh nas aplicações
+- apiGroups: ["argoproj.io"]
+  resources: ["applications/refresh"]
+  verbs: ["create"]
+
+# Ler secrets (se necessário para credenciais)
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]
+
+---
+# RoleBinding para vincular o ServiceAccount ao Role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: github-poller-appmanager
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: github-actions-poller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: github-poller-appmanager
+subjects:
+- kind: ServiceAccount
+  name: github-poller
+  namespace: argocd

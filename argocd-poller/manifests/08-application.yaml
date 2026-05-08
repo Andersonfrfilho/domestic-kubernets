@@ -1,0 +1,51 @@
+# ArgoCD Application para gerenciar o GitHub Actions Poller via GitOps
+# Este recurso permite que o ArgoCD sincronize automaticamente todos os manifestos
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd-poller
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: domestic
+spec:
+  # Projeto ArgoCD
+  project: default
+
+  # Source: onde os manifestos estão (este repositório)
+  source:
+    repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
+    targetRevision: HEAD
+    path: argocd-poller/manifests
+
+  # Destination: cluster e namespace alvo
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd-poller
+
+  # Política de sincronização
+  syncPolicy:
+    # Sincronizar automaticamente quando há mudanças no repo
+    automated:
+      prune: true      # Deletar recursos não mais presentes no repo
+      selfHeal: true   # Recriar se forem deletados manualmente
+
+    # Opções de sincronização
+    syncOptions:
+    - CreateNamespace=true  # Criar namespace se não existir
+    - PrunePropagationPolicy=foreground  # Aguardar antes de deletar
+
+    # Retry em caso de falha
+    retry:
+      limit: 5
+      backoff:
+        duration: 15s
+        factor: 2
+        maxDuration: 5m
+
+  # Ignorar diferenças que não são relevantes
+  ignoreDifferences:
+  - group: batch
+    kind: CronJob
+    jsonPointers:
+    - /spec/schedule  # Schedule pode vir do ConfigMap externamente

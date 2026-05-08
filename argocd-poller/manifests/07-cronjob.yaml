@@ -1,0 +1,90 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: github-actions-poller
+  namespace: argocd-poller
+  labels:
+    app: github-actions-poller
+    app.kubernetes.io/name: github-actions-poller
+    app.kubernetes.io/part-of: domestic
+spec:
+  # Schedule é controlado via ConfigMap (ver 05-configmap.yaml)
+  # Editar via: kubectl patch configmap github-poller-config -n argocd-poller -p '{"data":{"SCHEDULE":"*/5 * * * *"}}'
+  schedule: "* * * * *"  # placeholder, substituir pelo valor do ConfigMap
+
+  concurrencyPolicy: Allow
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 3
+  suspend: false
+
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      activeDeadlineSeconds: 600  # 10 minutos max por execução
+
+      template:
+        metadata:
+          labels:
+            app: github-actions-poller
+        spec:
+          serviceAccountName: github-poller
+          restartPolicy: OnFailure
+
+          containers:
+          - name: poller
+            image: alpine:latest
+            imagePullPolicy: Always
+
+            command:
+            - sh
+            - -c
+            - |
+              apk add --no-cache jq curl
+              sh /scripts/poller.sh
+
+            env:
+            # Token do GitHub para acessar Actions API
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-argocd-tokens
+                  key: github-token
+
+            # Token do ArgoCD para disparar refresh
+            - name: ARGOCD_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-argocd-tokens
+                  key: argocd-token
+
+            # Endereço do servidor ArgoCD (usar HTTP porta 80, não HTTPS)
+            - name: ARGOCD_SERVER
+              value: "argocd-server.argocd:80"
+
+            # Timeout para curl calls (via ConfigMap)
+            - name: CURL_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  name: github-poller-config
+                  key: CURL_TIMEOUT
+
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
+
+            volumeMounts:
+            # Script de polling
+            - name: scripts
+              mountPath: /scripts
+              readOnly: true
+
+          volumes:
+          # ConfigMap com o script (poller.sh)
+          - name: scripts
+            configMap:
+              name: github-poller-script
+              defaultMode: 0755
