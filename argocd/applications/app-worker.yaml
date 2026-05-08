@@ -7,6 +7,10 @@ metadata:
     app.kubernetes.io/part-of: domestic
   annotations:
     argocd.argoproj.io/sync-wave: "3"
+    argocd-image-updater.argoproj.io/image-list: worker=ghcr.io/andersonfrfilho/domestic-backend-worker
+    argocd-image-updater.argoproj.io/worker.update-strategy: latest
+    argocd-image-updater.argoproj.io/worker.allow-tags: regexp:^main$
+    argocd-image-updater.argoproj.io/git-branch: main
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
