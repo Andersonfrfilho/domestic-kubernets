@@ -170,3 +170,65 @@ These endpoints normalize input (remove formatting) and query the `users.documen
 | MinIO | `http://storage.domestic.local` | `domestic` | `minioadmin` |
 | ArgoCD | `http://argocd.domestic.local` | `admin` | *(auto-generated, shown by install script)* |
 | Grafana | `http://grafana.domestic.local` | `admin` | *(see grafana secret)* |
+
+## GitHub Actions Auto-Deploy (Polling)
+
+Sistema de polling do GitHub Actions a cada minuto para detectar novos builds e disparar sync automático no ArgoCD.
+
+### Configuração via ConfigMap
+
+O schedule do CronJob é controlado via ConfigMap. Para alterar:
+
+```bash
+# Editar diretamente
+kubectl edit configmap github-poller-config -n argocd-poller
+
+# Ou via patch
+kubectl patch configmap github-poller-config -n argocd-poller \
+  -p '{"data":{"SCHEDULE":"*/5 * * * *"}}'  # muda para cada 5 minutos
+```
+
+### Valores de SCHEDULE (formato cron padrão)
+
+| Schedule | Frequência |
+|---|---|
+| `* * * * *` | A cada minuto |
+| `*/5 * * * *` | A cada 5 minutos |
+| `*/10 * * * *` | A cada 10 minutos |
+| `0 * * * *` | A cada hora |
+
+### Como funciona
+
+1. **Polling** — CronJob faz query no GitHub Actions a cada minuto
+2. **SHA Comparison** — Compara commit SHA do GitHub com a revision deployada no ArgoCD
+3. **Refresh** — Se os SHAs forem diferentes, dispara refresh no ArgoCD
+4. **Deploy** — ArgoCD detecta nova imagem no GHCR e atualiza pods automaticamente
+
+### Monitorar
+
+```bash
+# Ver logs dos últimos jobs
+kubectl logs -n argocd-poller -l app=github-actions-poller --tail=50
+
+# Ver próxima execução agendada
+kubectl get cronjob -n argocd-poller github-actions-poller
+
+# Testar manualmente
+kubectl create job --from=cronjob/github-actions-poller test-run -n argocd-poller
+kubectl logs -n argocd-poller -l job-name=test-run
+```
+
+### Adicionar nova aplicação
+
+Editar ConfigMap do script e adicionar nova chamada `check_app`:
+
+```bash
+kubectl edit configmap github-poller-script -n argocd-poller
+
+# No final do script, antes do "echo ===", adicionar:
+# check_app "myapp" "domestic-backend-myapp" "domestic-myapp"
+```
+
+### Documentação completa
+
+Ver: `docs/GITHUB_ACTIONS_POLLER.md`

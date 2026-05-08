@@ -1,0 +1,27 @@
+# ConfigMap para controlar o schedule do GitHub Actions Poller
+# Edite o valor de SCHEDULE e rode:
+#   kubectl apply -f configmap-schedule.yaml
+#
+# Valores de SCHEDULE (formato cron):
+#   * * * * *      → a cada 1 minuto
+#   */5 * * * *    → a cada 5 minutos (default)
+#   */10 * * * *   → a cada 10 minutos
+#   0 * * * *      → a cada 1 hora
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: github-poller-config
+  namespace: argocd-poller
+data:
+  # Schedule do CronJob (formato cron padrão)
+  SCHEDULE: "* * * * *"
+
+  # Timeout para cada curl call (segundos)
+  CURL_TIMEOUT: "10"
+
+  # Número máximo de tentativas (futuro)
+  MAX_RETRIES: "3"
+
+  # Intervalo de polling interno (futuro)
+  POLL_INTERVAL: "40"

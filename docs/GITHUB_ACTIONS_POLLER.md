@@ -33,19 +33,24 @@ K8s restart pods com nova imagem
 - Image: `alpine:latest` (leve e rápido)
 
 ### 2. Script de Polling (`poller.sh`)
-Para cada aplicação (API, BFF, Worker, Cron):
+Para cada aplicação configurada (API, BFF, Worker, Cron):
 
 1. **Query GitHub Actions API**
    ```bash
    GET https://api.github.com/repos/Andersonfrfilho/{repo}/actions/runs?status=success
    ```
+   Extrai o SHA do commit do último build bem-sucedido
 
-2. **Extrai data do último build bem-sucedido**
+2. **Compara com a revision atual**
+   - Consulta ArgoCD: qual SHA está atualmente deployado?
+   - Se GitHub SHA == ArgoCD revision: ✗ PULA (já está deployado)
+   - Se diferentes: ✓ CONTINUA (nova imagem disponível)
 
-3. **Dispara refresh no ArgoCD**
+3. **Dispara refresh no ArgoCD (apenas se SHA diferente)**
    ```bash
-   POST https://argocd-server.argocd:443/api/v1/applications/{app}/refresh
+   POST http://argocd-server.argocd:80/api/v1/applications/{app}/refresh
    ```
+   **Nota:** Usa porta 80 (HTTP) ao invés de 443 para evitar problemas de TLS
 
 ### 3. Secrets
 - `github-argocd-tokens` contém:
@@ -128,13 +133,36 @@ kubectl logs -n argocd-poller -l job-name=test-run --follow
 
 **Causas possíveis**:
 - ✗ Último workflow falhou
-- ✗ Nenhum commit para a branch `main`
+- ✗ Nenhum commit para a branch `main` recentemente
 - ✗ Workflow ainda em execução
 
 **Solução**:
 1. Verificar GitHub Actions: `https://github.com/Andersonfrfilho/{repo}/actions`
 2. Fazer novo push para `main` para disparar workflow
 3. Aguardar workflow completar com sucesso
+
+### "SKIPPED (already deployed)" para todos os apps
+
+**Problema**: O poller roda mas não faz refresh em nenhuma aplicação
+
+**Causas possíveis**:
+- ✓ Comportamento normal se não há novos commits (SHAs são iguais)
+- ✗ ArgoCD não está retornando a revision correta
+- ✗ Token de ArgoCD inválido ou expirado
+
+**Solução**:
+```bash
+# 1. Verificar último run do poller
+kubectl logs -n argocd-poller -l app=github-actions-poller --tail=50
+
+# 2. Se todos estão com "No successful runs" - verificar GitHub
+# Se todos estão com "already deployed" mas há commits novos - verificar token
+kubectl get secret -n argocd-poller github-argocd-tokens -o jsonpath='{.data.argocd-token}' | base64 -d | head -c 50
+
+# 3. Testar manualmente com novo push
+git push origin main
+# Esperar ~5 min para o próximo poll ciclo
+```
 
 ### "Permission denied" no curl
 
@@ -193,6 +221,21 @@ kubectl -n argocd-poller run -it debug --image=alpine -- sh
 - ✅ Tokens com expiração (10 anos, renegociável)
 - ✅ Sem hardcoding de credenciais no script
 
+## Prevenção de Deployments Duplicados
+
+O script automaticamente **compara commits SHAs** entre GitHub e ArgoCD:
+
+```
+GitHub Actions: SHA abc123def456...
+ArgoCD Deployed: SHA abc123def456...
+                 ↓
+            SHAs são iguais?
+            ✓ SIM → Pula (economiza API calls e evita redeploy)
+            ✗ NÃO → Trigger refresh (nova imagem detectada)
+```
+
+Isso evita que o poller despache a mesma imagem múltiplas vezes, mesmo que o cron rode a cada 5 minutos sem novos commits.
+
 ## Customização
 
 ### Mudar frequência de polling
@@ -205,14 +248,26 @@ kubectl patch cronjob github-actions-poller \
 
 ### Adicionar nova aplicação
 
-Edite o ConfigMap `github-poller-script` e adicione na função:
+Edite o ConfigMap:
+```bash
+kubectl edit configmap -n argocd-poller github-poller-script
+```
+
+Na função `check_app`, adicione uma nova chamada:
 ```sh
-check_app "MyApp" "domestic-backend-myapp" "domestic-myapp"
+# No final do script, antes do "echo ==="
+check_app "myapp" "domestic-backend-myapp" "domestic-myapp"
+```
+
+Depois reinicie o CronJob:
+```bash
+kubectl delete cronjob -n argocd-poller github-actions-poller
+# O ArgoCD Application Controller vai recriá-lo automaticamente
 ```
 
 ### Remover uma aplicação
 
-Remova a linha correspondente no ConfigMap.
+Simplesmente remova a linha `check_app` correspondente no ConfigMap.
 
 ## Recursos Kubernetes
 
