@@ -14,7 +14,7 @@ data:
   DATABASE_POSTGRES_PORT: "5432"
   DATABASE_POSTGRES_NAME: "domestic_postgres"
   DATABASE_POSTGRES_SYNCHRONIZE: "false"
-  DATABASE_POSTGRES_LOGGING: "false"
+  DATABASE_POSTGRES_LOGGING: "true"
   DATABASE_POSTGRES_TIMEZONE: "Z"
   # MongoDB
   DATABASE_MONGO_HOST: "mongo"
@@ -32,4 +32,4 @@ data:
   # Observability
   OTEL_SERVICE_NAME: "domestic-worker"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
-  LOG_LEVEL: "info"
+  LOG_LEVEL: "debug"

@@ -26,4 +26,4 @@ data:
   # Observability
   OTEL_SERVICE_NAME: "domestic-bff"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
-  LOG_LEVEL: "info"
+  LOG_LEVEL: "debug"

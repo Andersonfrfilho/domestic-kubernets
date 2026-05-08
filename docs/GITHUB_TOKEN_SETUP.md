@@ -18,12 +18,13 @@ O ArgoCD Image Updater precisa fazer push de commits no repo `domestic-kubernets
 
 ```bash
 kubectl create secret generic git-creds \
-  --from-literal=username=seu-usuario-github \
-  --from-literal=password=seu-token-aqui \
+  --from-literal=username=asus-kubernets-local \
+  --from-literal=password=$GIT_HUB_KUBERNETS_TOKEN \
   -n argocd-image-updater
 ```
 
 Exemplo:
+
 ```bash
 kubectl create secret generic git-creds \
   --from-literal=username=Andersonfrfilho \
@@ -56,6 +57,7 @@ kubectl create secret generic git-creds \
 ## Segurança
 
 ⚠️ **Importante:**
+
 - O token fica em um Secret do Kubernetes (encriptado em etcd)
 - Pode ser revogado a qualquer momento em: https://github.com/settings/tokens
 - Se vazar, revogue imediatamente

@@ -6,7 +6,7 @@ metadata:
   labels:
     app: api
 data:
-  NODE_ENV: "production"
+  NODE_ENV: "development"
   NODE_OPTIONS: "--max-old-space-size=512"
   PORT: "3000"
   DATABASE_POSTGRES_HOST: "postgres"
@@ -25,7 +25,7 @@ data:
   STORAGE_MINIO_PORT: "9000"
   # TypeORM flags (from .env.example)
   DATABASE_POSTGRES_SYNCHRONIZE: "false"
-  DATABASE_POSTGRES_LOGGING: "false"
+  DATABASE_POSTGRES_LOGGING: "true"
   DATABASE_POSTGRES_TIMEZONE: "Z"
   # Keycloak realm / client (from .env.example)
   KEYCLOAK_REALM: "domestic"
@@ -33,7 +33,7 @@ data:
   # Observability
   OTEL_SERVICE_NAME: "domestic-api"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
-  LOG_LEVEL: "info"
+  LOG_LEVEL: "debug"
   # E2E test vars — required by the migration datasource validation schema
   DATABASE_POSTGRES_TEST_E2E_HOST: "postgres"
   DATABASE_POSTGRES_TEST_E2E_PORT: "5432"
