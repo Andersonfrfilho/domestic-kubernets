@@ -27,6 +27,7 @@ data:
       local app_name=$3
       local k8s_deployment=$4
       local k8s_namespace=$5
+      local image_repo=$6
 
       echo "Checking $app_name..."
 
@@ -49,20 +50,7 @@ data:
       echo "  ✓ Latest run: $run_date"
       echo "  SHA: $run_sha_short"
 
-      # Get current SHA from ArgoCD
-      app_revision=$(curl -s -m 5 http://argocd-server.argocd:80/api/v1/applications/$app_name \
-        -H "Authorization: Bearer $ARGOCD_TOKEN" 2>/dev/null | jq -r '.status.sync.revision // .status.operationState.syncResult.revision // empty' 2>/dev/null)
-
-      # Compare SHAs
-      if [ -n "$app_revision" ] && [ "$run_sha" = "$app_revision" ]; then
-        echo "  ⚠ SHA unchanged - already deployed"
-        echo "  → SKIPPED (no changes)"
-        echo ""
-        return
-      fi
-
-      # Trigger refresh
-      echo "  → New commit detected!"
+      # Trigger refresh to ensure ArgoCD is synced
       echo "  → Triggering ArgoCD refresh..."
 
       curl -s -X POST -m 10 http://argocd-server.argocd:80/api/v1/applications/$app_name/refresh \
@@ -73,33 +61,50 @@ data:
       echo "  ✓ Refresh triggered"
       REFRESH_COUNT=$((REFRESH_COUNT + 1))
 
-      # Update label and restart pods
-      if [ -n "$k8s_deployment" ] && [ -n "$k8s_namespace" ]; then
-        echo "  → Updating pod label (commit-sha=$run_sha_short)..."
+      # Sleep briefly to let refresh happen
+      sleep 3
 
-        # Patch deployment with new label
-        kubectl patch deployment/$k8s_deployment -n $k8s_namespace \
-          -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"commit-sha\":\"$run_sha_short\"}}}}}" 2>&1 >/dev/null || true
+      # Get current running image hash
+      running_pod=$(kubectl get pods -n $k8s_namespace -l app.kubernetes.io/name=$k8s_deployment -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
 
-        echo "  → Restarting pods para puxar nova imagem..."
+      if [ -z "$running_pod" ]; then
+        echo "  ⚠ No running pods found"
+        echo ""
+        return
+      fi
 
-        # Restart deployment to apply new label and pull new image
-        if kubectl rollout restart deployment/$k8s_deployment -n $k8s_namespace 2>&1 | grep -q "restarted"; then
-          echo "  ✓ Restart triggered (version: $run_sha_short)"
-          RESTART_COUNT=$((RESTART_COUNT + 1))
-        else
-          echo "  ⚠ Restart may have already completed"
-        fi
+      running_image=$(kubectl get pods -n $k8s_namespace $running_pod -o jsonpath='{.status.containerStatuses[0].imageID}' 2>/dev/null | grep -oE 'sha256:[a-f0-9]+' || echo "")
+
+      # Get latest image hash from registry (pull and inspect)
+      latest_image=$(docker pull $image_repo:main 2>/dev/null | grep -oE 'sha256:[a-f0-9]+' | head -1 || echo "")
+
+      if [ -n "$running_image" ] && [ -n "$latest_image" ] && [ "$running_image" = "$latest_image" ]; then
+        echo "  ✓ Image unchanged (hash: ${running_image:7:12})"
+        echo "  → SKIPPED (no image change)"
+        echo ""
+        return
+      fi
+
+      # Image changed - restart pods
+      echo "  → New image detected!"
+      echo "  → Restarting pods..."
+
+      kubectl patch deployment/$k8s_deployment -n $k8s_namespace \
+        -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"commit-sha\":\"$run_sha_short\"}}}}}" 2>&1 >/dev/null || true
+
+      if kubectl rollout restart deployment/$k8s_deployment -n $k8s_namespace 2>&1 | grep -q "restarted"; then
+        echo "  ✓ Restart triggered (version: $run_sha_short)"
+        RESTART_COUNT=$((RESTART_COUNT + 1))
       fi
 
       echo ""
     }
 
-    # Check each application
-    check_app "api" "domestic-backend-api" "domestic-api" "api" "domestic"
-    check_app "bff" "domestic-backend-bff" "domestic-bff" "bff" "domestic"
-    check_app "worker" "domestic-backend-worker" "domestic-worker" "worker" "domestic"
-    check_app "cron" "domestic-backend-cron" "domestic-cron" "cron" "domestic"
+    # Check each application with image repo
+    check_app "api" "domestic-backend-api" "domestic-api" "api" "domestic" "ghcr.io/andersonfrfilho/domestic-backend-api"
+    check_app "bff" "domestic-backend-bff" "domestic-bff" "bff" "domestic" "ghcr.io/andersonfrfilho/domestic-backend-bff"
+    check_app "worker" "domestic-backend-worker" "domestic-worker" "worker" "domestic" "ghcr.io/andersonfrfilho/domestic-backend-worker"
+    check_app "cron" "domestic-backend-cron" "domestic-cron" "cron" "domestic" "ghcr.io/andersonfrfilho/domestic-backend-cron"
 
     echo "=== Poll cycle completed ==="
     echo "Refreshes triggered: $REFRESH_COUNT"

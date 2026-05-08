@@ -7,10 +7,10 @@ metadata:
   labels:
     app.kubernetes.io/name: github-actions-poller
 rules:
-# Ler informações de aplicações (para descoberta dinâmica)
+# Ler, listar e patchear aplicações (para descoberta dinâmica e guardar último SHA)
 - apiGroups: ["argoproj.io"]
   resources: ["applications"]
-  verbs: ["get", "list"]
+  verbs: ["get", "list", "patch"]
 
 # Disparar refresh nas aplicações
 - apiGroups: ["argoproj.io"]
