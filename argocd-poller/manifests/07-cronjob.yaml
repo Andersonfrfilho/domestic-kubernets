@@ -39,7 +39,7 @@ spec:
             - sh
             - -c
             - |
-              apk add --no-cache jq curl
+              apk add --no-cache jq curl kubectl
               sh /scripts/poller.sh
 
             env:

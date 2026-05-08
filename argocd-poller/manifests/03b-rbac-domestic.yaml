@@ -1,0 +1,36 @@
+# RBAC para permitir que o poller manipule deployments no namespace domestic
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: github-poller-deployment-manager
+  namespace: domestic
+  labels:
+    app.kubernetes.io/name: github-actions-poller
+rules:
+# Permissões para patchear deployments (atualizar labels)
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "patch", "update"]
+
+# Permissões para rollout restart
+- apiGroups: ["apps"]
+  resources: ["deployments/rollback"]
+  verbs: ["create"]
+
+---
+# RoleBinding para vincular o ServiceAccount do argocd namespace ao Role no domestic namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: github-poller-deployment-manager
+  namespace: domestic
+  labels:
+    app.kubernetes.io/name: github-actions-poller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: github-poller-deployment-manager
+subjects:
+- kind: ServiceAccount
+  name: github-poller
+  namespace: argocd-poller

@@ -9,6 +9,7 @@ resources:
   - 01-namespace.yaml
   - 02-serviceaccount.yaml
   - 03-rbac.yaml
+  - 03b-rbac-domestic.yaml
   # - 04-secret.yaml          # Comentado: preencher manualmente com tokens reais!
   - 05-configmap.yaml
   - 06-configmap-script.yaml
