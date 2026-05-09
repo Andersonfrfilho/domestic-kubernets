@@ -64,7 +64,7 @@ data:
       # Sleep briefly to let refresh happen
       sleep 3
 
-      # Get current running image hash
+      # Get current running commit SHA from pod label
       running_pod=$(kubectl get pods -n $k8s_namespace -l app.kubernetes.io/name=$k8s_deployment -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
 
       if [ -z "$running_pod" ]; then
@@ -73,14 +73,12 @@ data:
         return
       fi
 
-      running_image=$(kubectl get pods -n $k8s_namespace $running_pod -o jsonpath='{.status.containerStatuses[0].imageID}' 2>/dev/null | grep -oE 'sha256:[a-f0-9]+' || echo "")
+      running_sha=$(kubectl get pods -n $k8s_namespace $running_pod -o jsonpath='{.metadata.labels.commit-sha}' 2>/dev/null || echo "")
 
-      # Get latest image hash from registry (pull and inspect)
-      latest_image=$(docker pull $image_repo:main 2>/dev/null | grep -oE 'sha256:[a-f0-9]+' | head -1 || echo "")
-
-      if [ -n "$running_image" ] && [ -n "$latest_image" ] && [ "$running_image" = "$latest_image" ]; then
-        echo "  ✓ Image unchanged (hash: ${running_image:7:12})"
-        echo "  → SKIPPED (no image change)"
+      # Compare commit SHAs
+      if [ -n "$running_sha" ] && [ "$running_sha" = "$run_sha_short" ]; then
+        echo "  ✓ Commit unchanged ($running_sha)"
+        echo "  → SKIPPED (same commit SHA)"
         echo ""
         return
       fi
