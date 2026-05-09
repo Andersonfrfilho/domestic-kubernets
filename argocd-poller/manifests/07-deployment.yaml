@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-actions-poller
+  namespace: argocd-poller
+  labels:
+    app: github-actions-poller
+    app.kubernetes.io/name: github-actions-poller
+    app.kubernetes.io/part-of: domestic
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: github-actions-poller
+  template:
+    metadata:
+      labels:
+        app: github-actions-poller
+    spec:
+      serviceAccountName: github-poller
+      restartPolicy: Always
+
+      containers:
+      - name: poller
+        image: alpine:latest
+        imagePullPolicy: Always
+
+        command:
+        - sh
+        - -c
+        - |
+          apk add --no-cache jq curl kubectl
+          while true; do
+            sh /scripts/poller.sh
+            echo "Waiting 30 seconds until next poll..."
+            sleep 30
+          done
+
+        env:
+        # Token do GitHub para acessar Actions API
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: github-argocd-tokens
+              key: github-token
+
+        # Token do ArgoCD para disparar refresh
+        - name: ARGOCD_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: github-argocd-tokens
+              key: argocd-token
+
+        # Endereço do servidor ArgoCD (usar HTTP porta 80, não HTTPS)
+        - name: ARGOCD_SERVER
+          value: "argocd-server.argocd:80"
+
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+
+        volumeMounts:
+        # Script de polling
+        - name: scripts
+          mountPath: /scripts
+          readOnly: true
+
+      volumes:
+      # ConfigMap com o script (poller.sh)
+      - name: scripts
+        configMap:
+          name: github-poller-script
+          defaultMode: 0755
