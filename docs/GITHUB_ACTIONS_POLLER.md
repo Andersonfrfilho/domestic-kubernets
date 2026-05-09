@@ -345,6 +345,40 @@ kubectl get pods -n domestic -L commit-sha
 | 2026-05-09 | Poller tentava `docker pull` em k3s fechado | Mudar para comparar SHA do commit via labels |
 | 2026-05-09 | Erro `Forbidden` ao patchear applications | Adicionar ClusterRole `argocd-app-writer` |
 | 2026-05-09 | BFF/API não detectavam novos builds | Imagens foram buildadas mas poller comparava SHAs errados |
+| 2026-05-09 | Poller falhava após ArgoCD refresh | Erro `Forbidden` ao listar pods no namespace `domestic` — adicionar Role `github-poller-pods` com permissões list/get em pods |
+
+## RBAC Required
+
+O poller precisa de permissões em dois contextos:
+
+### 1. ArgoCD (ClusterRole)
+```bash
+kubectl get clusterrole,clusterrolebinding | grep github-poller
+```
+
+Esperado:
+- `github-poller-argocd` → ClusterRole `argocd-app-reader` (read applications)
+- `github-poller-argocd-writer` → ClusterRole `argocd-app-writer` (patch applications)
+
+### 2. Domestic Namespace (Role)
+```bash
+kubectl get role,rolebinding -n domestic | grep github-poller
+```
+
+Esperado:
+- `github-poller-pods` → permite list/get de pods
+
+Se algum estiver faltando, criar:
+```bash
+# Role para listar pods
+kubectl create role github-poller-pods --verb=list,get --resource=pods -n domestic
+
+# RoleBinding
+kubectl create rolebinding github-poller-pods \
+  --role=github-poller-pods \
+  --serviceaccount=argocd-poller:github-poller \
+  -n domestic
+```
 
 ## Próximos Passos (Opcional)
 

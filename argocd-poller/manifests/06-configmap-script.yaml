@@ -53,27 +53,40 @@ data:
       # Trigger refresh to ensure ArgoCD is synced
       echo "  → Triggering ArgoCD refresh..."
 
-      curl -s -X POST -m 10 http://argocd-server.argocd:80/api/v1/applications/$app_name/refresh \
+      refresh_response=$(curl -s -X POST -m 10 http://argocd-server.argocd:80/api/v1/applications/$app_name/refresh \
         -H "Authorization: Bearer $ARGOCD_TOKEN" \
         -H "Content-Type: application/json" \
-        -d '{}' > /dev/null 2>&1
+        -d '{}' 2>&1 || true)
+
+      if echo "$refresh_response" | grep -q "error\|Error\|Forbidden\|Unauthorized"; then
+        echo "  ✗ Refresh failed: $refresh_response"
+        echo ""
+        return
+      fi
 
       echo "  ✓ Refresh triggered"
       REFRESH_COUNT=$((REFRESH_COUNT + 1))
 
       # Sleep briefly to let refresh happen
+      echo "  → Sleeping 3 seconds..."
       sleep 3
+      echo "  → Sleep done"
 
       # Get current running commit SHA from pod label
-      running_pod=$(kubectl get pods -n $k8s_namespace -l app=$k8s_deployment -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+      echo "  → Looking for pod with label app=$k8s_deployment in namespace $k8s_namespace..."
+      running_pod=$(kubectl get pods -n $k8s_namespace -l app=$k8s_deployment -o jsonpath='{.items[0].metadata.name}' 2>&1) || true
+      echo "  → Pod found: $running_pod"
 
       if [ -z "$running_pod" ]; then
-        echo "  ⚠ No running pods found"
+        echo "  ✗ ERROR: No running pods found!"
         echo ""
         return
       fi
 
-      running_sha=$(kubectl get pods -n $k8s_namespace $running_pod -o jsonpath='{.metadata.labels.commit-sha}' 2>/dev/null || echo "")
+      echo "  → Getting commit-sha label from pod..."
+      running_sha=$(kubectl get pods -n $k8s_namespace $running_pod -o jsonpath='{.metadata.labels.commit-sha}' 2>&1 || echo "")
+      echo "  → Running SHA: $running_sha"
+      echo "  → Latest SHA: $run_sha_short"
 
       # Compare commit SHAs
       if [ -n "$running_sha" ] && [ "$running_sha" = "$run_sha_short" ]; then
@@ -84,15 +97,17 @@ data:
       fi
 
       # Image changed - restart pods
-      echo "  → New image detected!"
-      echo "  → Restarting pods..."
-
+      echo "  → New image detected! ($running_sha != $run_sha_short)"
+      echo "  → Patching deployment with new commit-sha..."
       kubectl patch deployment/$k8s_deployment -n $k8s_namespace \
-        -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"commit-sha\":\"$run_sha_short\"}}}}}" 2>&1 >/dev/null || true
+        -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"commit-sha\":\"$run_sha_short\"}}}}}" 2>&1 || true
 
+      echo "  → Restarting deployment..."
       if kubectl rollout restart deployment/$k8s_deployment -n $k8s_namespace 2>&1 | grep -q "restarted"; then
         echo "  ✓ Restart triggered (version: $run_sha_short)"
         RESTART_COUNT=$((RESTART_COUNT + 1))
+      else
+        echo "  ✗ Restart may have failed - check logs"
       fi
 
       echo ""
