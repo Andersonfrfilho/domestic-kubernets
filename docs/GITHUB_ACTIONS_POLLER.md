@@ -285,20 +285,77 @@ kubectl get jobs -n argocd-poller
 kubectl get secret -n argocd-poller
 ```
 
+## 🔴 CRÍTICO: Comparação de SHA do Commit (não da imagem)
+
+### Problema Identificado (2026-05-09)
+
+Em ambientes **k3s fechados** (sem acesso à internet para docker pull), o poller original falhava ao tentar comparar SHA da imagem:
+
+```bash
+# ❌ ERRADO - Não funciona em k3s fechado
+latest_image=$(docker pull $image_repo:main 2>/dev/null | grep sha256)
+```
+
+**Por quê?**
+- `docker pull` requer acesso ao ghcr.io (pode estar bloqueado)
+- Compara SHA da imagem (layer digest), não do código
+- Em ambiente offline, o comando falha silenciosamente
+
+### Solução Implementada (2026-05-09)
+
+Mudar para comparar **SHA do commit** ao invés do SHA da imagem:
+
+```bash
+# ✅ CORRETO - Funciona em k3s fechado
+running_sha=$(kubectl get pods running_pod -o jsonpath='{.metadata.labels.commit-sha}')
+if [ "$running_sha" != "$run_sha_short" ]; then
+  # Nova versão detectada → restart
+  kubectl rollout restart deployment/$k8s_deployment
+fi
+```
+
+**Vantagens:**
+- ✅ Não precisa de docker pull
+- ✅ SHA do commit é imutável e sempre disponível no GitHub
+- ✅ Label `commit-sha` permite rastreamento rápido no pod
+- ✅ Funciona em qualquer ambiente (online/offline)
+
+### Como é adicionado o label `commit-sha`
+
+O poller adiciona o label durante o restart:
+
+```bash
+kubectl patch deployment/$k8s_deployment -n $k8s_namespace \
+  -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"commit-sha\":\"$run_sha_short\"}}}}}"
+```
+
+### Verificar labels nos pods
+
+```bash
+kubectl get pods -n domestic -L commit-sha
+# Exemplo output:
+# api-xxxx                          1/1     Running   ca1f5fa
+# bff-xxxx                          1/1     Running   5eb9307
+```
+
+### Histórico de Correções
+
+| Data | Problema | Solução |
+|------|----------|---------|
+| 2026-05-09 | Poller tentava `docker pull` em k3s fechado | Mudar para comparar SHA do commit via labels |
+| 2026-05-09 | Erro `Forbidden` ao patchear applications | Adicionar ClusterRole `argocd-app-writer` |
+| 2026-05-09 | BFF/API não detectavam novos builds | Imagens foram buildadas mas poller comparava SHAs errados |
+
 ## Próximos Passos (Opcional)
 
 Se quiser ainda mais otimização:
 
-1. **Usar SHA/Digest ao invés de tags**
-   - Detectar mudanças por SHA da imagem
-   - Mais preciso que tags `main`
-
-2. **Slack/Discord notifications**
+1. **Slack/Discord notifications**
    - Notificar quando deploy acontecer
 
-3. **Métricas Prometheus**
+2. **Métricas Prometheus**
    - Contar refreshes/falhas
    - Tempo de delay
 
-4. **GitHub Webhook (quando tiver accesso)**
+3. **GitHub Webhook (quando tiver accesso)**
    - Deploy imediato (não esperar 5 min)
