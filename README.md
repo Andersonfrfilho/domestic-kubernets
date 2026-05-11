@@ -1486,3 +1486,101 @@ minikube start    # retoma exatamente do ponto anterior
 
 minikube delete   # destrói tudo — use só para reset completo
 ```
+
+---
+
+## Reset Completo do PostgreSQL (Banco de Dados)
+
+Quando você precisa resetar o banco de dados para rodar migrations do zero:
+
+### 1. Deletar StatefulSet PostgreSQL e seu PVC
+
+```bash
+# Delete the StatefulSet
+kubectl delete statefulset postgres -n domestic
+
+# Delete the PVC (persistent volume claim) — ISSO APAGA OS DADOS!
+kubectl delete pvc postgres-data-postgres-0 -n domestic
+
+# Aguardar 5 segundos para ArgoCD recriar automaticamente
+sleep 5
+```
+
+### 2. Aguardar PostgreSQL estar pronto
+
+```bash
+# Verificar status
+kubectl get pods -n domestic | grep postgres
+
+# Aguardar até estar 1/1 Running
+kubectl wait --for=condition=ready pod -l app=postgres -n domestic --timeout=60s
+```
+
+### 3. Criar banco de dados e usuários
+
+PostgreSQL inicia com um user `domestic` (a senha está em `postgres-secret`). Criar o banco e usuários de aplicação:
+
+```bash
+# Conectar e criar banco
+kubectl exec -n domestic postgres-0 -- psql -U domestic -d template1 -c "
+CREATE DATABASE backend_database_postgres OWNER domestic;
+CREATE USER domestic_api WITH PASSWORD 'backendapi123';
+CREATE USER domestic_cron WITH PASSWORD 'backendapi123';
+CREATE USER domestic_worker WITH PASSWORD 'backendapi123';
+GRANT CONNECT ON DATABASE backend_database_postgres TO domestic_api;
+GRANT CONNECT ON DATABASE backend_database_postgres TO domestic_cron;
+GRANT CONNECT ON DATABASE backend_database_postgres TO domestic_worker;
+"
+```
+
+### 4. Rodar migrations
+
+O migration job roda automaticamente no init container do API, mas você pode forçar manualmente:
+
+```bash
+# Deletar job anterior (se houver)
+kubectl delete job migrator -n domestic --ignore-not-found
+
+# Aplicar novo migrator job
+kubectl apply -f ~/Documents/personal/domestic/domestic-kubernets/migrator/migrator.job.yaml
+
+# Acompanhar logs
+kubectl logs -n domestic -l app=migrator --follow
+```
+
+Pronto! O banco está novo com schema do zero.
+
+### ⚠️ Notas Importantes
+
+- **Dados perdidos**: Deletar o PVC apaga TODOS os dados do PostgreSQL permanentemente
+- **ArgoCD recria automaticamente**: Não se preocupe em recriar o StatefulSet — ArgoCD faz isso
+- **Usuarios hardcoded**: Os usuários `domestic_api`, `domestic_cron`, `domestic_worker` com senha `backendapi123` são padrão. Se mudou a senha no Secret, ajustar aqui também
+- **Migrations idempotentes**: As migrations devem ser idempotentes (rodar 2x não causa erro). Se houver erro, você pode rodar o job novamente
+
+### Quick Reset (Ubuntu k3s)
+
+Se você estiver na rede e só quer resetar sem perder o resto:
+
+```bash
+# SSH no Ubuntu
+ssh anderson@192.168.3.60
+
+# Reset PostgreSQL
+kubectl delete statefulset postgres -n domestic
+kubectl delete pvc postgres-data-postgres-0 -n domestic
+sleep 5
+kubectl wait --for=condition=ready pod -l app=postgres -n domestic --timeout=60s
+kubectl exec -n domestic postgres-0 -- psql -U domestic -d template1 -c "
+CREATE DATABASE backend_database_postgres OWNER domestic;
+CREATE USER domestic_api WITH PASSWORD 'backendapi123';
+CREATE USER domestic_cron WITH PASSWORD 'backendapi123';
+CREATE USER domestic_worker WITH PASSWORD 'backendapi123';
+GRANT CONNECT ON DATABASE backend_database_postgres TO domestic_api;
+GRANT CONNECT ON DATABASE backend_database_postgres TO domestic_cron;
+GRANT CONNECT ON DATABASE backend_database_postgres TO domestic_worker;
+"
+
+# Rodar migrations
+kubectl delete job migrator -n domestic --ignore-not-found
+kubectl apply -f ~/Documents/personal/domestic/domestic-kubernets/migrator/migrator.job.yaml
+```
