@@ -182,6 +182,30 @@ services:
           - /bff/health
         strip_path: false
       
+      # Address autocomplete (JWT + rate limiting por usuário)
+      - name: bff-address-autocomplete-route
+        regex_priority: 93
+        paths:
+          - /bff/address/autocomplete
+        strip_path: false
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              key_claim_name: iss
+              claims_to_verify:
+                - exp
+          - name: rate-limiting
+            config:
+              minute: 30
+              policy: local
+              fault_tolerant: true
+              hide_client_headers: false
+              error_code: 429
+              error_message: |
+                {"statusCode":429,"error":"RATE_LIMIT_EXCEEDED","message":"Muitas buscas em pouco tempo. Tente novamente em alguns instantes."}
+
       # Rotas privadas protegidas por JWT
       - name: bff-private-route
         paths:
