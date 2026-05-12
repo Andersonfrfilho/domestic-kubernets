@@ -29,3 +29,5 @@ data:
   LOG_LEVEL: "debug"
   # Feature flags
   FEATURE_DOCUMENT_PHOTO_VERIFICATION: "true"
+  # Upload
+  UPLOAD_MAX_FILE_SIZE_MB: "10"
