@@ -99,10 +99,10 @@ services:
         paths:
           - /bff/onboarding/register
           - /bff/onboarding/address
+          - /bff/onboarding/documents/upload
           - /bff/onboarding/verification/send
           - /bff/onboarding/verification/verify
           - /bff/onboarding/cep
-          - /bff/onboarding/documents/upload
         strip_path: false
 
       # Rotas de verificação de campos (com rate limiting)
