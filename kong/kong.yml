@@ -98,6 +98,7 @@ services:
         regex_priority: 95
         paths:
           - /bff/onboarding/register
+          - /bff/onboarding/address
           - /bff/onboarding/verification/send
           - /bff/onboarding/verification/verify
           - /bff/onboarding/cep
