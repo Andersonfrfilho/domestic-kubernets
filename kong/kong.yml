@@ -218,3 +218,20 @@ services:
               key_claim_name: iss
               claims_to_verify:
                 - exp
+
+  # ── API User — Rotas de usuário (JWT) ───────────────────────────────────────
+  - name: api-users-service
+    url: http://api:3000
+    plugins:
+      - name: jwt
+        config:
+          key_claim_name: iss
+          claims_to_verify:
+            - exp
+    routes:
+      - name: api-users-me-route
+        paths:
+          - /api/v1/users/me
+        strip_path: true
+        methods:
+          - GET
