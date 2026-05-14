@@ -39,6 +39,12 @@ spec:
             # Health check e Bull Board (dashboard de filas), se habilitado
             - containerPort: 3002
               name: http
+          env:
+            - name: DEBUG_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: worker-secret
+                  key: DATABASE_POSTGRES_PASSWORD
           envFrom:
             - configMapRef:
                 name: worker-config
