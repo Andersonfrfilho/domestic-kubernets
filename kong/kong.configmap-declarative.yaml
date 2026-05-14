@@ -1,0 +1,246 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-declarative-config
+  namespace: domestic
+  labels:
+    app: kong
+data:
+  kong.yml: |
+    _format_version: "3.0"
+    _transform: true
+
+    # Consumer que representa qualquer usuário autenticado via Keycloak.
+    # O plugin JWT mapeia o claim `iss` do token para este consumer.
+    consumers:
+      - username: keycloak-user
+        jwt_secrets:
+          - key: "http://keycloak.domestic.local/realms/domestic"
+            algorithm: RS256
+            rsa_public_key: |
+              -----BEGIN PUBLIC KEY-----
+              MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyBOEiVWmDnOOOxWLcZgZ
+              u0Q93SgujouWe3IG8pUfFsTklwyBiNB90L2GnQ7IOWYgipnZ9WAcsT9ynKaSn6CS
+              YbewKb/kv5RA2KrZSdGCfIZXhcl74IdA+F7CWaGR112ms7rwDi++Kmoumy+9E6Fj
+              L1dXXzdxD1B5J8J/JFq52TWDMKyCCn0dk7KeMhZVEwlTJ98pQ9gO8gC2aKEV/L5v
+              6XFZA/fS7ctrTydN0Y+St21c8HxD7LEv7V0WZwMsNaLFliJ36f5Ku2S8w5C8y2Dt
+              7q0vtmEIwQ4TLmyYd8nqtJwROKYW2kyW+c7ht9VW43XACbS6MKzjAeu9UapN1kpz
+              XQIDAQAB
+              -----END PUBLIC KEY-----
+
+    plugins:
+      # Faz Kong enviar Host: keycloak.domestic.local ao proxiar para auth e account.
+      - name: request-transformer
+        service: auth-service
+        config:
+          replace:
+            headers:
+              - "Host: keycloak.domestic.local"
+
+      - name: request-transformer
+        service: account-service
+        config:
+          replace:
+            headers:
+              - "Host: keycloak.domestic.local"
+
+    services:
+      # ── Auth (sem JWT) ────────────────────────────────────────────────────────
+      - name: auth-service
+        url: http://keycloak:8080/realms/domestic/protocol/openid-connect
+        routes:
+          - name: auth-route
+            paths:
+              - /auth
+            strip_path: true
+
+      # ── Account / password reset (sem JWT) ───────────────────────────────────
+      - name: account-service
+        url: http://keycloak:8080/realms/domestic
+        routes:
+          - name: account-route
+            paths:
+              - /account
+            strip_path: true
+
+      # ── API REST (protegida por JWT) ──────────────────────────────────────────
+      - name: api-service
+        url: http://api:3000
+        plugins:
+          - name: jwt
+            config:
+              key_claim_name: iss
+              claims_to_verify:
+                - exp
+        routes:
+          - name: api-route
+            paths:
+              - /api
+            strip_path: true
+
+      # ── API REST — Rotas públicas (sem JWT) ───────────────────────────────────
+      - name: api-public-service
+        url: http://api:3000
+        routes:
+          - name: api-public-route
+            paths:
+              - /v1/categories
+              - /v1/services
+              - /v1/providers
+            strip_path: false
+            methods:
+              - GET
+
+      # ── BFF — Backend for Frontend ──────────────────────────────────────────
+      - name: bff-service
+        url: http://bff:3001
+        routes:
+          # Rota pública para Autenticação (forgot password)
+          - name: bff-auth-route
+            regex_priority: 100
+            paths:
+              - /bff/auth
+            strip_path: false
+
+          # Rotas públicas de Onboarding (registro, verificação, CEP)
+          - name: bff-onboarding-public-route
+            regex_priority: 95
+            paths:
+              - /bff/onboarding/register
+              - /bff/onboarding/address
+              - /bff/onboarding/documents/upload
+              - /bff/onboarding/verification/send
+              - /bff/onboarding/verification/verify
+              - /bff/onboarding/cep
+            strip_path: false
+
+          # Rotas de verificação de campos (com rate limiting)
+          - name: bff-verify-email-route
+            regex_priority: 96
+            paths:
+              - /bff/onboarding/verify/email
+            strip_path: false
+            methods:
+              - POST
+            plugins:
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+                  fault_tolerant: true
+                  header_name: X-RateLimit-Remaining
+                  hide_client_headers: false
+                  error_code: 429
+                  error_message: |
+                    {"statusCode":429,"error":"RATE_LIMIT_EXCEEDED","message":"Muitas tentativas. Tente novamente em alguns minutos.","field":"email"}
+
+          - name: bff-verify-phone-route
+            regex_priority: 96
+            paths:
+              - /bff/onboarding/verify/phone
+            strip_path: false
+            methods:
+              - POST
+            plugins:
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+                  fault_tolerant: true
+                  header_name: X-RateLimit-Remaining
+                  hide_client_headers: false
+                  error_code: 429
+                  error_message: |
+                    {"statusCode":429,"error":"RATE_LIMIT_EXCEEDED","message":"Muitas tentativas. Tente novamente em alguns minutos.","field":"phone"}
+
+          - name: bff-verify-document-route
+            regex_priority: 96
+            paths:
+              - /bff/onboarding/verify/document
+            strip_path: false
+            methods:
+              - POST
+            plugins:
+              - name: rate-limiting
+                config:
+                  minute: 3
+                  policy: local
+                  fault_tolerant: true
+                  header_name: X-RateLimit-Remaining
+                  hide_client_headers: false
+                  error_code: 429
+                  error_message: |
+                    {"statusCode":429,"error":"RATE_LIMIT_EXCEEDED","message":"Muitas tentativas. Tente novamente em alguns minutos.","field":"document"}
+
+          # Rotas públicas de Terms (versão atual, lista, check-pending, accept)
+          - name: bff-terms-public-route
+            regex_priority: 94
+            paths:
+              - /bff/auth/terms/current
+              - /bff/auth/terms/versions
+              - /bff/auth/terms/check-pending
+              - /bff/auth/terms/accept
+            strip_path: false
+
+          # Rotas públicas (app-config, home, search, health)
+          - name: bff-public-route
+            regex_priority: 90
+            paths:
+              - /bff/app-config
+              - /bff/home
+              - /bff/search
+              - /bff/health
+            strip_path: false
+
+          # Address autocomplete (JWT + rate limiting por usuário)
+          - name: bff-address-autocomplete-route
+            regex_priority: 93
+            paths:
+              - /bff/address/autocomplete
+            strip_path: false
+            methods:
+              - GET
+            plugins:
+              - name: jwt
+                config:
+                  key_claim_name: iss
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 30
+                  policy: local
+                  fault_tolerant: true
+                  hide_client_headers: false
+                  error_code: 429
+                  error_message: |
+                    {"statusCode":429,"error":"RATE_LIMIT_EXCEEDED","message":"Muitas buscas em pouco tempo. Tente novamente em alguns instantes."}
+
+          # Rotas privadas protegidas por JWT
+          - name: bff-private-route
+            paths:
+              - /bff
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  key_claim_name: iss
+                  claims_to_verify:
+                    - exp
+
+      # ── API User — Rotas de usuário (JWT) ───────────────────────────────────────
+      - name: api-users-service
+        url: http://api:3000
+        plugins:
+          - name: jwt
+            config:
+              key_claim_name: iss
+              claims_to_verify:
+                - exp
+        routes:
+          - name: api-users-me-route
+            paths:
+              - /api/v1/users/me
+            strip_path: true
+            methods:
+              - GET

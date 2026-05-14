@@ -63,8 +63,8 @@ spec:
             failureThreshold: 5
             timeoutSeconds: 10
       volumes:
-        # Created via: kubectl create configmap kong-declarative-config \
-        #   --from-file=kong.yml=./kong/kong.yml -n domestic
+        # ConfigMap defined in kong.configmap-declarative.yaml
+        # Originally sourced from kong.yml.reference (Kong declarative format)
         - name: kong-declarative
           configMap:
             name: kong-declarative-config
