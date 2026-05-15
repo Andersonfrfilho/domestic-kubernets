@@ -5,6 +5,9 @@ metadata:
   namespace: domestic
   labels:
     app: api
+  annotations:
+    build.timestamp: "0"
+    build.commit: "0"
 spec:
   replicas: 1
   selector:
