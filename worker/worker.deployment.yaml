@@ -1,6 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+    annotations:
+      build.timestamp: "2026-05-15T02:20:06Z"
+      build.commit: "74307fdf8868ed43701f42373801bc0247a3b238"
   name: worker
   namespace: domestic
   labels:
@@ -14,6 +17,9 @@ spec:
       app: worker
   template:
     metadata:
+    annotations:
+      build.timestamp: "2026-05-15T02:20:06Z"
+      build.commit: "74307fdf8868ed43701f42373801bc0247a3b238"
       labels:
         app: worker
     spec:
