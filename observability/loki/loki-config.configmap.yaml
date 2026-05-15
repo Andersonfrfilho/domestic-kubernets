@@ -46,7 +46,12 @@ data:
       alertmanager_url: http://localhost:9093
 
     limits_config:
-      ingestion_rate_mb: 4
-      ingestion_burst_size_mb: 6
+      ingestion_rate_mb: 10
+      ingestion_burst_size_mb: 20
       max_query_length: 721h
-      retention_period: 168h
+      retention_period: 1440h
+      max_cache_freshness_per_query: 10m
+
+    table_manager:
+      retention_deletes_enabled: true
+      retention_period: 1440h
