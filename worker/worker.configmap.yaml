@@ -27,6 +27,7 @@ data:
   QUEUE_RABBITMQ_PORT: "5672"
   RABBITMQ_URL: "amqp://domestic_worker:backendapi123@rabbitmq:5672"
   # QUEUE_RABBITMQ_USER e QUEUE_RABBITMQ_PASS vêm do Secret (worker-secret)
+  # DATABASE_POSTGRES_USER and PASSWORD vêm do Secret (worker-secret)
   # Storage (para processar uploads, gerar relatórios, etc.)
   STORAGE_MINIO_ENDPOINT: "minio"
   STORAGE_MINIO_PORT: "9000"

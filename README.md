@@ -786,11 +786,20 @@ Demora ~30s a cada mudança (rebuild completo). Use apenas para mudanças pontua
 ## Quick Start (passo a passo completo)
 
 > Todos os comandos `kubectl apply -f` devem ser executados **deste diretório**:
-> `~/Documents/personal/domestic/kubernetes/`
+> `~/Documents/personal/domestic/domestic-kubernets/`
 >
-> Os comandos que referenciam arquivos do projeto (`kong/kong.yml`, `keycloak-config/`, etc.)
+> Os comandos que referenciam arquivos do projeto (`keycloak-config/`, `monitoring/`, etc.)
 > devem ser executados **do diretório da API**:
 > `~/Documents/personal/domestic/domestic-backend-api/`
+>
+> O `kong.yml` declarativo existe em ambos os repositórios. Para criar/atualizar o ConfigMap
+> **deste diretório** (sem precisar mudar de pasta):
+>
+> ```bash
+> kubectl create configmap kong-declarative-config \
+>   --from-file=kong.yml=./kong/kong.yml \
+>   -n domestic --dry-run=client -o yaml | kubectl apply -f -
+> ```
 
 ### 1. Iniciar o minikube
 
@@ -865,15 +874,17 @@ kubectl apply -f observability/grafana/grafana.secret.yaml   # se for subir obse
 
 ### 7. Criar ConfigMaps a partir dos arquivos do projeto
 
-Execute **a partir do diretório da API** (`domestic-backend-api/`):
+Execute a partir do diretório da API (`domestic-backend-api/`) ou de manifests (`domestic-kubernets/`):
 
 ```bash
+# A partir do diretório da API
 cd ../domestic-backend-api
 
 # Configuração declarativa do Kong (roteamento, plugins)
+# O --dry-run | apply torna o comando idempotente (cria ou atualiza)
 kubectl create configmap kong-declarative-config \
   --from-file=kong.yml=./kong/kong.yml \
-  -n domestic
+  -n domestic --dry-run=client -o yaml | kubectl apply -f -
 
 # Realm do Keycloak (usuários, clientes, roles)
 kubectl create configmap keycloak-realm-config \
@@ -927,6 +938,12 @@ kubectl rollout status deployment/api -n domestic
 # 5. Kong (depende de api + keycloak)
 kubectl apply -f kong/
 kubectl rollout status deployment/kong -n domestic
+
+# Para atualizar o config declarativo depois de alterar kong/kong.yml:
+#   kubectl create configmap kong-declarative-config \
+#     --from-file=kong.yml=kong/kong.yml \
+#     -n domestic --dry-run=client -o yaml | kubectl apply -f -
+#   kubectl rollout restart deployment/kong -n domestic
 ```
 
 ### 9. Deploy — Ingress (expor na rede local)
