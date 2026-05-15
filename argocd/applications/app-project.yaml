@@ -31,6 +31,10 @@ spec:
       kind: Namespace
     - group: storage.k8s.io
       kind: StorageClass
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
 
   namespaceResourceWhitelist:
     - group: "*"
