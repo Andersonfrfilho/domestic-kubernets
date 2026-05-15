@@ -6,7 +6,7 @@ metadata:
   labels:
     app: api
   annotations:
-    build.timestamp: "2026-05-15T03:41:05Z"
+    build.timestamp: "2026-05-15T04:33:53Z"
     build.commit: "0"
 spec:
   replicas: 1
