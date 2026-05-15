@@ -15,10 +15,6 @@ spec:
       labels:
         app: jaeger
     spec:
-      initContainers:
-        - name: wait-for-api
-          image: busybox:1.36
-          command: [sh, -c, "until nc -z api 3000; do echo waiting for api; sleep 2; done"]
       containers:
         - name: jaeger
           image: jaegertracing/all-in-one:latest
