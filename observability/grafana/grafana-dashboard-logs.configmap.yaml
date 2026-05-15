@@ -1,0 +1,189 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-logs
+  namespace: domestic
+  labels:
+    app: grafana
+data:
+  logs.json: |
+    {
+      "title": "Domestic Logs",
+      "uid": "domestic-logs",
+      "version": 1,
+      "refresh": "30s",
+      "time": { "from": "now-1h", "to": "now" },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Errors by Service",
+          "type": "logs",
+          "gridPos": { "x": 0, "y": 0, "w": 24, "h": 10 },
+          "targets": [
+            {
+              "expr": "{namespace=\"domestic\"} | json | level=\"ERROR\"",
+              "legendFormat": "",
+              "datasource": "Loki"
+            }
+          ],
+          "options": {
+            "showLabels": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          }
+        },
+        {
+          "id": 2,
+          "title": "Email Sending Issues",
+          "type": "logs",
+          "gridPos": { "x": 0, "y": 10, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "{namespace=\"domestic\"} | json | message =~ \".*[Ee]mail.*\" or message =~ \".*[Vv]erification.*\"",
+              "legendFormat": "",
+              "datasource": "Loki"
+            }
+          ],
+          "options": {
+            "showLabels": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          }
+        },
+        {
+          "id": 3,
+          "title": "Authentication Failures",
+          "type": "logs",
+          "gridPos": { "x": 12, "y": 10, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "{namespace=\"domestic\"} | json | message =~ \".*[Aa]uth.*\" or message =~ \".*[Kk]eycloak.*\" or level=\"WARN\"",
+              "legendFormat": "",
+              "datasource": "Loki"
+            }
+          ],
+          "options": {
+            "showLabels": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          }
+        },
+        {
+          "id": 4,
+          "title": "RabbitMQ/Queue Issues",
+          "type": "logs",
+          "gridPos": { "x": 0, "y": 18, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "{namespace=\"domestic\"} | json | message =~ \".*[Qq]ueue.*\" or message =~ \".*[Rr]abbit.*\" or message =~ \".*AMQP.*\"",
+              "legendFormat": "",
+              "datasource": "Loki"
+            }
+          ],
+          "options": {
+            "showLabels": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          }
+        },
+        {
+          "id": 5,
+          "title": "Database Errors",
+          "type": "logs",
+          "gridPos": { "x": 12, "y": 18, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "{namespace=\"domestic\"} | json | message =~ \".*[Dd]atabase.*\" or message =~ \".*[Pp]ostgres.*\" or message =~ \".*[Qq]uery.*\" | level=\"ERROR\"",
+              "legendFormat": "",
+              "datasource": "Loki"
+            }
+          ],
+          "options": {
+            "showLabels": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          }
+        },
+        {
+          "id": 6,
+          "title": "Cron Job Failures",
+          "type": "logs",
+          "gridPos": { "x": 0, "y": 26, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "{namespace=\"domestic\", app=\"cron\"} | json | level=\"ERROR\" or message =~ \".*[Ff]ailed.*\" or message =~ \".*exception.*\"",
+              "legendFormat": "",
+              "datasource": "Loki"
+            }
+          ],
+          "options": {
+            "showLabels": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          }
+        },
+        {
+          "id": 7,
+          "title": "All Warnings",
+          "type": "logs",
+          "gridPos": { "x": 12, "y": 26, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "{namespace=\"domestic\"} | json | level=\"WARN\"",
+              "legendFormat": "",
+              "datasource": "Loki"
+            }
+          ],
+          "options": {
+            "showLabels": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          }
+        },
+        {
+          "id": 8,
+          "title": "API Logs - Last 100 lines",
+          "type": "logs",
+          "gridPos": { "x": 0, "y": 34, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "{namespace=\"domestic\", app=\"api\"} | tail(100)",
+              "legendFormat": "",
+              "datasource": "Loki"
+            }
+          ],
+          "options": {
+            "showLabels": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          }
+        },
+        {
+          "id": 9,
+          "title": "Cron Logs - Last 100 lines",
+          "type": "logs",
+          "gridPos": { "x": 12, "y": 34, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "{namespace=\"domestic\", app=\"cron\"} | tail(100)",
+              "legendFormat": "",
+              "datasource": "Loki"
+            }
+          ],
+          "options": {
+            "showLabels": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          }
+        }
+      ]
+    }
