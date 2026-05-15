@@ -15,9 +15,9 @@ spec:
       app: bff
   template:
     metadata:
-    annotations:
-      build.timestamp: "2026-05-15T04:33:55Z"
-      build.commit: "04244de4b9cccee2ba99c7b3f8094d7891bd178e"
+      annotations:
+        build.timestamp: "2026-05-15T04:33:55Z"
+        build.commit: "04244de4b9cccee2ba99c7b3f8094d7891bd178e"
       labels:
         app: bff
     spec:
