@@ -218,6 +218,11 @@ services:
               key_claim_name: iss
               claims_to_verify:
                 - exp
+          - name: request-transformer
+            config:
+              add:
+                headers:
+                  - "x-user-id:$(jwt.claim.sub)"
 
   # ── API User — Rotas de usuário (JWT) ───────────────────────────────────────
   - name: api-users-service
