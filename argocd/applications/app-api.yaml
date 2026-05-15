@@ -17,7 +17,7 @@ spec:
   project: domestic
   source:
     repoURL: "https://github.com/Andersonfrfilho/domestic-kubernets"
-    targetRevision: HEAD
+    targetRevision: main
     path: api
   destination:
     server: https://kubernetes.default.svc
