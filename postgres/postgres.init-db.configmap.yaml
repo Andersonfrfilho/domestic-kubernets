@@ -10,8 +10,8 @@ data:
     -- Create API user
     DO $$
     BEGIN
-      IF NOT EXISTS (SELECT FROM pg_user WHERE usename = 'domestic_api') THEN
-        CREATE ROLE domestic_api WITH LOGIN PASSWORD 'backendapi123' CREATEDB;
+      IF NOT EXISTS (SELECT FROM pg_user WHERE usename = 'backend_api') THEN
+        CREATE ROLE backend_api WITH LOGIN PASSWORD 'backendapi123' CREATEDB;
       END IF;
     END
     $$;
@@ -26,12 +26,12 @@ data:
     $$;
 
     -- Grant privileges to API user
-    GRANT CONNECT ON DATABASE domestic_postgres TO domestic_api;
-    GRANT CREATE ON DATABASE domestic_postgres TO domestic_api;
-    GRANT USAGE ON SCHEMA public TO domestic_api;
-    GRANT CREATE ON SCHEMA public TO domestic_api;
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO domestic_api;
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO domestic_api;
+    GRANT CONNECT ON DATABASE domestic_postgres TO backend_api;
+    GRANT CREATE ON DATABASE domestic_postgres TO backend_api;
+    GRANT USAGE ON SCHEMA public TO backend_api;
+    GRANT CREATE ON SCHEMA public TO backend_api;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO backend_api;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO backend_api;
 
     -- Grant privileges to Cron user
     GRANT CONNECT ON DATABASE domestic_postgres TO backend_cron;
