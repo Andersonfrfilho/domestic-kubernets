@@ -106,7 +106,7 @@ data:
           "gridPos": { "x": 12, "y": 16, "w": 6, "h": 8 },
           "targets": [
             {
-              "expr": "nodejs_active_handles_total{job=\"domestic-api\"}",
+              "expr": "nodejs_active_handles{job=\"domestic-api\"}",
               "legendFormat": "Active Handles",
               "datasource": "Prometheus"
             }
