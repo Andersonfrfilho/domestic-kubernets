@@ -7,7 +7,16 @@ metadata:
     app: postgres
 data:
   init.sql: |
-    -- Create backend_cron user if it doesn't exist
+    -- Create API user
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT FROM pg_user WHERE usename = 'domestic_api') THEN
+        CREATE ROLE domestic_api WITH LOGIN PASSWORD 'backendapi123' CREATEDB;
+      END IF;
+    END
+    $$;
+
+    -- Create Cron user
     DO $$
     BEGIN
       IF NOT EXISTS (SELECT FROM pg_user WHERE usename = 'backend_cron') THEN
@@ -16,7 +25,15 @@ data:
     END
     $$;
 
-    -- Grant privileges
+    -- Grant privileges to API user
+    GRANT CONNECT ON DATABASE domestic_postgres TO domestic_api;
+    GRANT CREATE ON DATABASE domestic_postgres TO domestic_api;
+    GRANT USAGE ON SCHEMA public TO domestic_api;
+    GRANT CREATE ON SCHEMA public TO domestic_api;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO domestic_api;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO domestic_api;
+
+    -- Grant privileges to Cron user
     GRANT CONNECT ON DATABASE domestic_postgres TO backend_cron;
     GRANT CREATE ON DATABASE domestic_postgres TO backend_cron;
     GRANT USAGE ON SCHEMA public TO backend_cron;
