@@ -5,9 +5,6 @@ metadata:
   namespace: domestic
   labels:
     app: api
-  annotations:
-    build.timestamp: "2026-05-18T02:09:35Z"
-    build.commit: "0"
 spec:
   replicas: 1
   selector:
@@ -17,6 +14,9 @@ spec:
     metadata:
       labels:
         app: api
+      annotations:
+        build.timestamp: "2026-05-18T02:09:35Z"
+        build.commit: "a18d06eead4333f27b56345dbdbf278958e507a86"
     spec:
       imagePullSecrets:
         - name: ghcr-secret
