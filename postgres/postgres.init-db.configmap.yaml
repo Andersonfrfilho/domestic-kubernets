@@ -40,3 +40,20 @@ data:
     GRANT CREATE ON SCHEMA public TO backend_cron;
     ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO backend_cron;
     ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO backend_cron;
+
+    -- Create backend_worker user if it doesn't exist
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT FROM pg_user WHERE usename = 'backend_worker') THEN
+        CREATE ROLE backend_worker WITH LOGIN PASSWORD 'backendworker123' CREATEDB;
+      END IF;
+    END
+    $$;
+
+    -- Grant privileges
+    GRANT CONNECT ON DATABASE domestic_postgres TO backend_worker;
+    GRANT CREATE ON DATABASE domestic_postgres TO backend_worker;
+    GRANT USAGE ON SCHEMA public TO backend_worker;
+    GRANT CREATE ON SCHEMA public TO backend_worker;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO backend_worker;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO backend_worker;
