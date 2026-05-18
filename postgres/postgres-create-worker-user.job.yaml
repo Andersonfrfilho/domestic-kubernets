@@ -1,0 +1,68 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgres-create-worker-user
+  namespace: domestic
+  labels:
+    app: postgres
+    component: db-init
+  annotations:
+    # Delete this Job after ArgoCD applies it and it completes successfully.
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 3
+  activeDeadlineSeconds: 120
+  template:
+    metadata:
+      labels:
+        app: postgres
+        component: db-init
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: create-worker-user
+          image: postgres:16-alpine
+          command:
+            - sh
+            - -c
+            - |
+              echo "Creating backend_worker role in PostgreSQL..."
+              psql -v ON_ERROR_STOP=0 <<'SQL'
+              DO $$
+              BEGIN
+                IF NOT EXISTS (SELECT FROM pg_user WHERE usename = 'backend_worker') THEN
+                  CREATE ROLE backend_worker WITH LOGIN PASSWORD 'backendworker123' CREATEDB;
+                  RAISE NOTICE 'Role backend_worker created.';
+                ELSE
+                  RAISE NOTICE 'Role backend_worker already exists, skipping.';
+                END IF;
+              END
+              $$;
+              GRANT CONNECT ON DATABASE domestic_postgres TO backend_worker;
+              GRANT CREATE ON DATABASE domestic_postgres TO backend_worker;
+              GRANT USAGE ON SCHEMA public TO backend_worker;
+              GRANT CREATE ON SCHEMA public TO backend_worker;
+              ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO backend_worker;
+              ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO backend_worker;
+              SQL
+              echo "Done."
+          env:
+            - name: PGHOST
+              value: "postgres"
+            - name: PGPORT
+              value: "5432"
+            - name: PGDATABASE
+              value: "domestic_postgres"
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_USER
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
