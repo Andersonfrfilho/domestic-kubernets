@@ -13,20 +13,27 @@ o cluster k3s que roda no notebook servidor (`192.168.3.60`).
 
 ---
 
-## Passo 1 — Habilitar SSH no servidor
+## Passo 1 — Habilitar SSH e abrir porta no firewall
 
 Acesse o servidor Ubuntu fisicamente (ou via monitor) e execute:
 
 ```bash
+# 1. Garantir que o serviço SSH está instalado e ativo
+sudo apt update && sudo apt install -y openssh-server
 sudo systemctl enable ssh
 sudo systemctl start ssh
 sudo systemctl status ssh   # deve mostrar "active (running)"
+
+# 2. Liberar a porta 22 no UFW (firewall do Ubuntu)
+sudo ufw allow ssh          # equivale a: sudo ufw allow 22/tcp
+sudo ufw reload
+sudo ufw status             # deve listar "22/tcp ALLOW"
 ```
 
-> Se o pacote não estiver instalado:
+> **Verificar se o UFW está bloqueando:**
 > ```bash
-> sudo apt update && sudo apt install -y openssh-server
-> sudo systemctl enable ssh && sudo systemctl start ssh
+> sudo ufw status verbose
+> # Se mostrar "Status: active" e porta 22 não listada → é o UFW bloqueando
 > ```
 
 ---
@@ -121,6 +128,16 @@ kubectl port-forward svc/redis 6379:6379 -n domestic
 → O kubeconfig copiado já inclui o CA do k3s — certifique-se de que o campo
 `certificate-authority-data` não foi corrompido durante a cópia.
 
-**SSH timeout**
+**SSH timeout (porta 22 inacessível, porta 6443 acessível)**
+→ O serviço SSH está rodando mas o firewall está bloqueando a porta 22.
+No servidor, execute:
+```bash
+sudo ufw allow ssh && sudo ufw reload
+```
+
+**SSH timeout (ambas as portas inacessíveis)**
 → Verifique se o serviço SSH está ativo no servidor:
-`sudo systemctl status ssh`
+```bash
+sudo systemctl status ssh
+sudo systemctl start ssh
+```
