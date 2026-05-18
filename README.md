@@ -162,16 +162,24 @@ Ver seção **"Setup Ubuntu Server (k3s)"** abaixo.
 sudo apt update && sudo apt upgrade -y
 
 # Dependências básicas
-sudo apt install -y curl wget git vim net-tools nmap ufw
+sudo apt install -y curl wget git vim net-tools nmap ufw openssh-server
 
 # Docker (necessário para buildar imagens e rodar o registry local)
 curl -fsSL https://get.docker.com | sudo bash
 sudo usermod -aG docker $USER
 newgrp docker
 
+# Habilitar e iniciar SSH (para acesso remoto via kubectl)
+sudo systemctl enable ssh
+sudo systemctl start ssh
+sudo systemctl status ssh   # deve mostrar "active (running)"
+
 # Verificar instalação
 docker --version
 ```
+
+> **Status: ✅ SSH configurado em 2026-05-18**
+> OpenSSH instalado, habilitado e rodando na porta 22. Máquina acessível na rede em `192.168.3.60:22`
 
 ### 2. Ubuntu — definir IP estático (fundamental para DNS da LAN)
 
