@@ -18,13 +18,13 @@ data:
       - url: http://loki:3100/loki/api/v1/push
 
     scrape_configs:
-      - job_name: kubernetes-pods-domestic
+      - job_name: kubernetes-pods
+        kubernetes_sd_configs:
+          - role: pods
+            namespace: domestic
         static_configs:
           - targets:
               - localhost
-            labels:
-              namespace: domestic
-              __path__: /var/log/pods/domestic_*/*/*.log
         pipeline_stages:
           - cri: {}
           - json:
@@ -37,11 +37,5 @@ data:
               level:
               context:
         relabel_configs:
-          - source_labels: [__path__]
-            regex: '.*/domestic_([^_/]+)-[^_/]+-[^_/]+_[^/]+/([^/]+)/\d+\.log'
+          - source_labels: [__meta_kubernetes_pod_name]
             target_label: app
-            replacement: '$1'
-          - source_labels: [__path__]
-            regex: '.*/domestic_[^/]+/([^/]+)/\d+\.log'
-            target_label: container
-            replacement: '$1'
