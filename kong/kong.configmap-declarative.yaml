@@ -192,7 +192,7 @@ data:
               - /bff/health
             strip_path: false
 
-          # Address autocomplete (JWT + rate limiting por usuário)
+          # Address autocomplete — pública (usada no cadastro antes do login)
           - name: bff-address-autocomplete-route
             regex_priority: 93
             paths:
@@ -201,15 +201,11 @@ data:
             methods:
               - GET
             plugins:
-              - name: jwt
-                config:
-                  key_claim_name: iss
-                  claims_to_verify:
-                    - exp
               - name: rate-limiting
                 config:
                   minute: 30
                   policy: local
+                  limit_by: ip
                   fault_tolerant: true
                   hide_client_headers: false
                   error_code: 429
