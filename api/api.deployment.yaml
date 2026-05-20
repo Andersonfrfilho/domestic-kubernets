@@ -15,8 +15,8 @@ spec:
       labels:
         app: api
       annotations:
-        build.timestamp: "2026-05-20T01:57:17Z"
-        build.commit: "a18d06eead4333f27b56345dbdbf278958e507a86"
+        build.timestamp: "2026-05-20T02:55:49Z"
+        build.commit: "6e428543c58c8e113f5773e6f6fbf6f89c4500f3"
     spec:
       imagePullSecrets:
         - name: ghcr-secret
