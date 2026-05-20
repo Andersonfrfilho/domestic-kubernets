@@ -6,7 +6,7 @@ metadata:
   labels:
     app: bff
 data:
-  NODE_ENV: "development"
+  NODE_ENV: "production"
   NODE_OPTIONS: "--max-old-space-size=512"
   PORT: "3001"
   # API interna — BFF chama a API via ClusterIP (não passa pelo Kong)
