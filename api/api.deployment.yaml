@@ -15,7 +15,7 @@ spec:
       labels:
         app: api
       annotations:
-        build.timestamp: "2026-05-18T02:09:35Z"
+        build.timestamp: "2026-05-20T01:57:17Z"
         build.commit: "a18d06eead4333f27b56345dbdbf278958e507a86"
     spec:
       imagePullSecrets:
