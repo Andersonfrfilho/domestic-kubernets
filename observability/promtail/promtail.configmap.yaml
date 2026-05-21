@@ -32,23 +32,6 @@ data:
             labels:
               job: kubernetes-pods
               __path__: /var/log/pods/*/*/*.log
-        relabel_configs:
-          - source_labels: [__path__]
-            regex: '/var/log/pods/([^_]+)_([^_]+)_.*/([^/]+)/0\.log'
-            replacement: '${1}'
-            target_label: namespace
-          - source_labels: [__path__]
-            regex: '/var/log/pods/[^_]+_([^_]+)_.*/([^/]+)/0\.log'
-            replacement: '${1}'
-            target_label: pod
-          - source_labels: [__path__]
-            regex: '/var/log/pods/[^_]+_[^_]+_.*/([^/]+)/0\.log'
-            replacement: '${1}'
-            target_label: container
-          - source_labels: [pod]
-            regex: '([^-]+).*'
-            replacement: '${1}'
-            target_label: service_name
         pipeline_stages:
           - multiline:
               firstline: '(^\{|^\d{4}-)'
