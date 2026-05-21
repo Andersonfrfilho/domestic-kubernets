@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: mongodb-exporter
-          image: percona/mongodb_exporter:latest
+          image: bitnami/mongodb-exporter:latest
           ports:
             - containerPort: 9216
               name: metrics
