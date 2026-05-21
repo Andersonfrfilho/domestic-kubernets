@@ -31,7 +31,7 @@ data:
           "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "sum(rate(http_requests_total{service=\"domestic-bff\"}[$interval])) by (route)",
+              "expr": "sum(rate(http_requests_total{job=\"domestic-bff\"}[$interval])) by (route)",
               "legendFormat": "{{route}}",
               "datasource": "Prometheus"
             }
@@ -44,7 +44,7 @@ data:
           "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "sum(rate(http_requests_total{service=\"domestic-bff\",status_code=~\"5..\"}[$interval])) / sum(rate(http_requests_total{service=\"domestic-bff\"}[$interval])) * 100",
+              "expr": "sum(rate(http_requests_total{job=\"domestic-bff\",status_code=~\"5..\"}[$interval])) / sum(rate(http_requests_total{job=\"domestic-bff\"}[$interval])) * 100",
               "legendFormat": "Error %",
               "datasource": "Prometheus"
             }
@@ -57,17 +57,17 @@ data:
           "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{service=\"domestic-bff\"}[$interval])) by (le))",
+              "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=\"domestic-bff\"}[$interval])) by (le))",
               "legendFormat": "p50",
               "datasource": "Prometheus"
             },
             {
-              "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{service=\"domestic-bff\"}[$interval])) by (le))",
+              "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"domestic-bff\"}[$interval])) by (le))",
               "legendFormat": "p95",
               "datasource": "Prometheus"
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{service=\"domestic-bff\"}[$interval])) by (le))",
+              "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"domestic-bff\"}[$interval])) by (le))",
               "legendFormat": "p99",
               "datasource": "Prometheus"
             }
@@ -106,7 +106,7 @@ data:
           "gridPos": { "x": 12, "y": 16, "w": 6, "h": 8 },
           "targets": [
             {
-              "expr": "sum(http_requests_total{service=\"domestic-bff\"})",
+              "expr": "sum(http_requests_total{job=\"domestic-bff\"})",
               "legendFormat": "Total",
               "datasource": "Prometheus"
             }
@@ -119,7 +119,7 @@ data:
           "gridPos": { "x": 0, "y": 24, "w": 24, "h": 10 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\", app=\"bff\"}",
+              "expr": "{namespace=\"domestic\"} |= \"bff\"",
               "legendFormat": "",
               "datasource": "Loki"
             }
