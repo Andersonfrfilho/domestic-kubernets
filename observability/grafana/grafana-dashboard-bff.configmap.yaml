@@ -131,31 +131,5 @@ data:
             "wrapLogMessage": true
           }
         },
-        {
-          "id": 8,
-          "title": "Node.js Heap Used (MB)",
-          "type": "timeseries",
-          "gridPos": { "x": 0, "y": 34, "w": 12, "h": 8 },
-          "targets": [
-            {
-              "expr": "nodejs_heap_size_used_bytes{job=\"domestic-bff\"} / 1024 / 1024",
-              "legendFormat": "Heap Used",
-              "datasource": "Prometheus"
-            }
-          ]
-        },
-        {
-          "id": 9,
-          "title": "Node.js External Memory (MB)",
-          "type": "timeseries",
-          "gridPos": { "x": 12, "y": 34, "w": 12, "h": 8 },
-          "targets": [
-            {
-              "expr": "nodejs_external_memory_bytes{job=\"domestic-bff\"} / 1024 / 1024",
-              "legendFormat": "External Memory",
-              "datasource": "Prometheus"
-            }
-          ]
-        }
       ]
     }
