@@ -51,3 +51,39 @@ data:
           - targets: ['mongodb-exporter:9216']
         metrics_path: /metrics
         scrape_interval: 15s
+
+      - job_name: 'postgres'
+        static_configs:
+          - targets: ['postgres-exporter:9187']
+        metrics_path: /metrics
+        scrape_interval: 15s
+
+      - job_name: 'kong'
+        static_configs:
+          - targets: ['kong:8001']
+        metrics_path: /metrics
+        scrape_interval: 10s
+
+      - job_name: 'keycloak'
+        static_configs:
+          - targets: ['keycloak:9000']
+        metrics_path: /metrics
+        scrape_interval: 10s
+
+      - job_name: 'kubernetes-cadvisor'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor

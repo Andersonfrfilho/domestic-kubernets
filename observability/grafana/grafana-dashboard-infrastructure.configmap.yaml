@@ -1,0 +1,120 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-infrastructure
+  namespace: domestic
+  labels:
+    app: grafana
+data:
+  infrastructure.json: |
+    {
+      "title": "Infrastructure — CPU & Memory",
+      "uid": "infrastructure",
+      "version": 1,
+      "refresh": "30s",
+      "time": { "from": "now-6h", "to": "now" },
+      "templating": {
+        "list": [
+          {
+            "name": "interval",
+            "type": "interval",
+            "query": "1m,5m,15m,30m",
+            "current": { "value": "5m" }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "title": "CPU Usage by Pod",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"domestic\"}[$interval])",
+              "legendFormat": "{{pod_name}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "title": "Memory Working Set by Pod (MB)",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "container_memory_working_set_bytes{namespace=\"domestic\"} / 1024 / 1024",
+              "legendFormat": "{{pod_name}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "title": "CPU Usage % (vs Limit)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "(rate(container_cpu_usage_seconds_total{namespace=\"domestic\"}[$interval]) / (container_spec_cpu_quota{namespace=\"domestic\"} / container_spec_cpu_period{namespace=\"domestic\"})) * 100",
+              "legendFormat": "{{pod_name}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "title": "Memory Usage % (vs Limit)",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "(container_memory_working_set_bytes{namespace=\"domestic\"} / container_memory_limit_bytes{namespace=\"domestic\"}) * 100",
+              "legendFormat": "{{pod_name}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "title": "Network Received (MB/s)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(container_network_receive_bytes_total{namespace=\"domestic\"}[$interval]) / 1024 / 1024",
+              "legendFormat": "{{pod_name}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "title": "Network Transmitted (MB/s)",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(container_network_transmit_bytes_total{namespace=\"domestic\"}[$interval]) / 1024 / 1024",
+              "legendFormat": "{{pod_name}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "title": "Container Status Table",
+          "type": "table",
+          "gridPos": { "x": 0, "y": 24, "w": 24, "h": 10 },
+          "targets": [
+            {
+              "expr": "group by (namespace, pod_name) (container_memory_limit_bytes{namespace=\"domestic\"})",
+              "legendFormat": "{{pod_name}}",
+              "datasource": "Prometheus",
+              "instant": true
+            }
+          ]
+        }
+      ]
+    }

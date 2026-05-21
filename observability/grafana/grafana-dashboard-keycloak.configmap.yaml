@@ -1,0 +1,163 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-keycloak
+  namespace: domestic
+  labels:
+    app: grafana
+data:
+  keycloak.json: |
+    {
+      "title": "Keycloak — Identity & Auth",
+      "uid": "keycloak",
+      "version": 1,
+      "refresh": "30s",
+      "time": { "from": "now-1h", "to": "now" },
+      "templating": {
+        "list": [
+          {
+            "name": "interval",
+            "type": "interval",
+            "query": "1m,5m,10m,30m",
+            "current": { "value": "5m" }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "title": "JVM Heap Used (MB)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "jvm_memory_used_bytes{job=\"keycloak\", area=\"heap\"} / 1024 / 1024",
+              "legendFormat": "Heap Used",
+              "datasource": "Prometheus"
+            },
+            {
+              "expr": "jvm_memory_max_bytes{job=\"keycloak\", area=\"heap\"} / 1024 / 1024",
+              "legendFormat": "Heap Max",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "title": "HTTP Requests Rate (req/s)",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total{job=\"keycloak\"}[$interval])) by (route)",
+              "legendFormat": "{{route}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "title": "Authentication Success Rate (%)",
+          "type": "stat",
+          "gridPos": { "x": 0, "y": 8, "w": 6, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(rate(keycloak_authentication_attempts_total{status=\"success\"}[$interval])) / sum(rate(keycloak_authentication_attempts_total[$interval])) * 100",
+              "legendFormat": "Success %",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "title": "Failed Authentications (5m)",
+          "type": "stat",
+          "gridPos": { "x": 6, "y": 8, "w": 6, "h": 8 },
+          "targets": [
+            {
+              "expr": "increase(keycloak_authentication_attempts_total{status=\"failure\"}[5m])",
+              "legendFormat": "Failed",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "title": "Active Sessions",
+          "type": "stat",
+          "gridPos": { "x": 12, "y": 8, "w": 6, "h": 8 },
+          "targets": [
+            {
+              "expr": "keycloak_sessions_active{job=\"keycloak\"}",
+              "legendFormat": "Active Sessions",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "title": "Total Users",
+          "type": "stat",
+          "gridPos": { "x": 18, "y": 8, "w": 6, "h": 8 },
+          "targets": [
+            {
+              "expr": "keycloak_users_total{job=\"keycloak\"}",
+              "legendFormat": "Total Users",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "title": "Database Connections",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "jvm_threads_live_threads{job=\"keycloak\"}",
+              "legendFormat": "Threads",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "title": "HTTP Error Rate (5xx %)",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total{job=\"keycloak\", status_code=~\"5..\"}[$interval])) / sum(rate(http_requests_total{job=\"keycloak\"}[$interval])) * 100",
+              "legendFormat": "Error %",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "title": "Pod CPU Usage",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"domestic\", pod_name=~\"keycloak-.*\"}[$interval])",
+              "legendFormat": "{{pod_name}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 10,
+          "title": "Pod Memory Usage (MB)",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "container_memory_working_set_bytes{namespace=\"domestic\", pod_name=~\"keycloak-.*\"} / 1024 / 1024",
+              "legendFormat": "{{pod_name}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        }
+      ]
+    }

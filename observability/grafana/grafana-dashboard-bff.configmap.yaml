@@ -130,6 +130,32 @@ data:
             "sortOrder": "Descending",
             "wrapLogMessage": true
           }
+        },
+        {
+          "id": 8,
+          "title": "Pod CPU Usage",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 34, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"domestic\", pod_name=~\"bff-.*\"}[$interval])",
+              "legendFormat": "{{pod_name}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "title": "Pod Memory Usage (MB)",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 34, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "container_memory_working_set_bytes{namespace=\"domestic\", pod_name=~\"bff-.*\"} / 1024 / 1024",
+              "legendFormat": "{{pod_name}}",
+              "datasource": "Prometheus"
+            }
+          ]
         }
       ]
     }

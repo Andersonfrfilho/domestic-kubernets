@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: domestic
+  labels:
+    app: prometheus
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+  labels:
+    app: prometheus
+rules:
+  # Required for kubernetes_sd_configs with role: node
+  - apiGroups: ['']
+    resources: ['nodes']
+    verbs: ['get', 'list', 'watch']
+  # Required for scraping kubelet cAdvisor metrics
+  - apiGroups: ['']
+    resources: ['nodes/proxy']
+    verbs: ['get']
+  # Required for kubernetes_sd_configs with role: pod
+  - apiGroups: ['']
+    resources: ['pods']
+    verbs: ['get', 'list', 'watch']
+  # Required for kubernetes_sd_configs with role: service
+  - apiGroups: ['']
+    resources: ['services', 'endpoints']
+    verbs: ['get', 'list', 'watch']
+  # Required to get metrics from nodes
+  - apiGroups: ['']
+    resources: ['nodes/metrics']
+    verbs: ['get']
+  # For metrics.k8s.io (metrics server)
+  - apiGroups: ['metrics.k8s.io']
+    resources: ['nodes', 'pods']
+    verbs: ['get', 'list']
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+  labels:
+    app: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: domestic

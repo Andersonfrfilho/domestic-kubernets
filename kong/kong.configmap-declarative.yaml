@@ -29,6 +29,15 @@ data:
               -----END PUBLIC KEY-----
 
     plugins:
+      # Global Prometheus metrics plugin
+      - name: prometheus
+        config:
+          per_consumer: false
+          status_code_metrics: true
+          latency_metrics: true
+          bandwidth_metrics: true
+          upstream_health_metrics: true
+
       # Faz Kong enviar Host: keycloak.domestic.local ao proxiar para auth e account.
       - name: request-transformer
         service: auth-service

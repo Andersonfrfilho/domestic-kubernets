@@ -1,0 +1,137 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-kong
+  namespace: domestic
+  labels:
+    app: grafana
+data:
+  kong.json: |
+    {
+      "title": "Kong API Gateway",
+      "uid": "kong",
+      "version": 1,
+      "refresh": "30s",
+      "time": { "from": "now-1h", "to": "now" },
+      "templating": {
+        "list": [
+          {
+            "name": "interval",
+            "type": "interval",
+            "query": "1m,5m,10m,30m",
+            "current": { "value": "5m" }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Request Rate (req/s)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(rate(kong_http_requests_total[$interval])) by (service)",
+              "legendFormat": "{{service}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "title": "HTTP Status Codes",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(rate(kong_http_requests_total[$interval])) by (status)",
+              "legendFormat": "{{status}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "title": "Latency P50 / P99 (ms)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, sum(rate(kong_http_request_duration_ms_bucket[$interval])) by (le, service)) / 1000",
+              "legendFormat": "p50 {{service}}",
+              "datasource": "Prometheus"
+            },
+            {
+              "expr": "histogram_quantile(0.99, sum(rate(kong_http_request_duration_ms_bucket[$interval])) by (le, service)) / 1000",
+              "legendFormat": "p99 {{service}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "title": "Error Rate (%)",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(rate(kong_http_requests_total{status=~\"5..\"}[$interval])) / sum(rate(kong_http_requests_total[$interval])) * 100",
+              "legendFormat": "Error %",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "title": "Bandwidth In (MB/s)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(rate(kong_upstream_bandwidth_bytes_total{type=\"sent\"}[$interval])) / 1024 / 1024",
+              "legendFormat": "Sent",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "title": "Bandwidth Out (MB/s)",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(rate(kong_upstream_bandwidth_bytes_total{type=\"received\"}[$interval])) / 1024 / 1024",
+              "legendFormat": "Received",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "title": "Kong Pod CPU Usage",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"domestic\", pod_name=~\"kong-.*\"}[$interval])",
+              "legendFormat": "{{pod_name}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "title": "Kong Pod Memory Usage (MB)",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "container_memory_working_set_bytes{namespace=\"domestic\", pod_name=~\"kong-.*\"} / 1024 / 1024",
+              "legendFormat": "{{pod_name}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        }
+      ]
+    }

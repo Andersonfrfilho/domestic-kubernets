@@ -95,6 +95,22 @@ spec:
               mountPath: /var/lib/grafana/dashboards/logs.json
               subPath: logs.json
               readOnly: true
+            - name: grafana-dashboard-infrastructure
+              mountPath: /var/lib/grafana/dashboards/infrastructure.json
+              subPath: infrastructure.json
+              readOnly: true
+            - name: grafana-dashboard-kong
+              mountPath: /var/lib/grafana/dashboards/kong.json
+              subPath: kong.json
+              readOnly: true
+            - name: grafana-dashboard-keycloak
+              mountPath: /var/lib/grafana/dashboards/keycloak.json
+              subPath: keycloak.json
+              readOnly: true
+            - name: grafana-dashboard-postgres
+              mountPath: /var/lib/grafana/dashboards/postgres.json
+              subPath: postgres.json
+              readOnly: true
           resources:
             requests:
               memory: "256Mi"
@@ -144,3 +160,15 @@ spec:
         - name: grafana-dashboard-logs
           configMap:
             name: grafana-dashboard-logs
+        - name: grafana-dashboard-infrastructure
+          configMap:
+            name: grafana-dashboard-infrastructure
+        - name: grafana-dashboard-kong
+          configMap:
+            name: grafana-dashboard-kong
+        - name: grafana-dashboard-keycloak
+          configMap:
+            name: grafana-dashboard-keycloak
+        - name: grafana-dashboard-postgres
+          configMap:
+            name: grafana-dashboard-postgres
