@@ -25,7 +25,7 @@ data:
       - job_name: 'domestic-bff'
         static_configs:
           - targets: ['bff:3001']
-        metrics_path: /metrics
+        metrics_path: /bff/metrics
         scrape_interval: 10s
 
       - job_name: 'domestic-worker'
