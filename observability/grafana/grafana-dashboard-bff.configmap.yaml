@@ -133,26 +133,26 @@ data:
         },
         {
           "id": 8,
-          "title": "Pod CPU Usage",
+          "title": "Request Duration Distribution",
           "type": "timeseries",
           "gridPos": { "x": 0, "y": 34, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"domestic\", pod_name=~\"bff-.*\"}[$interval])",
-              "legendFormat": "{{pod_name}}",
+              "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"domestic-bff\"}[$interval])) by (le))",
+              "legendFormat": "p95",
               "datasource": "Prometheus"
             }
           ]
         },
         {
           "id": 9,
-          "title": "Pod Memory Usage (MB)",
+          "title": "4xx Error Rate",
           "type": "timeseries",
           "gridPos": { "x": 12, "y": 34, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "container_memory_working_set_bytes{namespace=\"domestic\", pod_name=~\"bff-.*\"} / 1024 / 1024",
-              "legendFormat": "{{pod_name}}",
+              "expr": "sum(rate(http_requests_total{job=\"domestic-bff\",status_code=~\"4..\"}[$interval])) / sum(rate(http_requests_total{job=\"domestic-bff\"}[$interval])) * 100",
+              "legendFormat": "4xx %",
               "datasource": "Prometheus"
             }
           ]

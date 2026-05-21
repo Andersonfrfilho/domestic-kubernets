@@ -146,26 +146,26 @@ data:
         },
         {
           "id": 9,
-          "title": "Pod CPU Usage",
+          "title": "Pod CPU Usage (from metrics)",
           "type": "timeseries",
           "gridPos": { "x": 0, "y": 34, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"domestic\", pod_name=~\"api-.*\"}[$interval])",
-              "legendFormat": "{{pod_name}}",
+              "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"api-.*\"}[$interval])) by (pod)",
+              "legendFormat": "{{pod}}",
               "datasource": "Prometheus"
             }
           ]
         },
         {
           "id": 10,
-          "title": "Pod Memory Usage (MB)",
+          "title": "HTTP Request Duration (P99)",
           "type": "timeseries",
           "gridPos": { "x": 12, "y": 34, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "container_memory_working_set_bytes{namespace=\"domestic\", pod_name=~\"api-.*\"} / 1024 / 1024",
-              "legendFormat": "{{pod_name}}",
+              "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"domestic-api\"}[$interval])) by (le))",
+              "legendFormat": "p99",
               "datasource": "Prometheus"
             }
           ]

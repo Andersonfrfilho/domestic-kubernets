@@ -133,26 +133,26 @@ data:
         },
         {
           "id": 8,
-          "title": "Pod CPU Usage",
+          "title": "Node.js Heap Allocated (MB)",
           "type": "timeseries",
           "gridPos": { "x": 0, "y": 34, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"domestic\", pod_name=~\"cron-.*\"}[$interval])",
-              "legendFormat": "{{pod_name}}",
+              "expr": "nodejs_heap_size_total_bytes{job=\"domestic-cron\"} / 1024 / 1024",
+              "legendFormat": "Total",
               "datasource": "Prometheus"
             }
           ]
         },
         {
           "id": 9,
-          "title": "Pod Memory Usage (MB)",
+          "title": "Node.js Event Loop Lag",
           "type": "timeseries",
           "gridPos": { "x": 12, "y": 34, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "container_memory_working_set_bytes{namespace=\"domestic\", pod_name=~\"cron-.*\"} / 1024 / 1024",
-              "legendFormat": "{{pod_name}}",
+              "expr": "nodejs_eventloop_lag_seconds{job=\"domestic-cron\"}",
+              "legendFormat": "Lag",
               "datasource": "Prometheus"
             }
           ]

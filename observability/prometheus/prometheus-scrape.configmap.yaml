@@ -99,11 +99,11 @@ data:
             action: replace
             target_label: node
         metric_relabel_configs:
-          # Only keep pod-level metrics (container_* with pod and namespace labels)
-          - source_labels: [__name__]
-            action: keep
-            regex: container_.*
-          # Drop if no pod label (node-level metrics)
+          # Keep only pod metrics (with pod_name label)
           - source_labels: [pod_name]
             action: drop
             regex: ^$
+          # Drop unused internal metrics
+          - source_labels: [__name__]
+            action: drop
+            regex: (cpuacct_.*|memory_failcnt|memory_memsw.*|memory_numa.*|network_tcp.*|network_udp.*|fs_io_.*|blkio_.*)
