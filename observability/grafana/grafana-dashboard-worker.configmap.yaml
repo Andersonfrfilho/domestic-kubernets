@@ -119,7 +119,7 @@ data:
           "gridPos": { "x": 0, "y": 24, "w": 24, "h": 10 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\"} |= \"worker\"",
+              "expr": "{namespace=\"domestic\",pod_name=~\"worker-.*\"}",
               "legendFormat": "",
               "datasource": "Loki"
             }
