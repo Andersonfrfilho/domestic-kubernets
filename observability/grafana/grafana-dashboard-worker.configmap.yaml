@@ -133,26 +133,26 @@ data:
         },
         {
           "id": 8,
-          "title": "Pod CPU Usage",
+          "title": "Node.js Heap Used (MB)",
           "type": "timeseries",
           "gridPos": { "x": 0, "y": 34, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"domestic\", pod_name=~\"worker-.*\"}[$interval])",
-              "legendFormat": "{{pod_name}}",
+              "expr": "nodejs_heap_size_used_bytes{job=\"domestic-worker\"} / 1024 / 1024",
+              "legendFormat": "Heap Used",
               "datasource": "Prometheus"
             }
           ]
         },
         {
           "id": 9,
-          "title": "Pod Memory Usage (MB)",
+          "title": "Node.js External Memory (MB)",
           "type": "timeseries",
           "gridPos": { "x": 12, "y": 34, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "container_memory_working_set_bytes{namespace=\"domestic\", pod_name=~\"worker-.*\"} / 1024 / 1024",
-              "legendFormat": "{{pod_name}}",
+              "expr": "nodejs_external_memory_bytes{job=\"domestic-worker\"} / 1024 / 1024",
+              "legendFormat": "External Memory",
               "datasource": "Prometheus"
             }
           ]
