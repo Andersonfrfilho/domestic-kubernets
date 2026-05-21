@@ -50,6 +50,8 @@ spec:
                 secretKeyRef:
                   name: keycloak-secret
                   key: KC_DB_PASSWORD
+            - name: KC_METRICS_ENABLED
+              value: "true"
           envFrom:
             - configMapRef:
                 name: keycloak-config
