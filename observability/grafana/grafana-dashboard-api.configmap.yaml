@@ -125,24 +125,5 @@ data:
             }
           ]
         },
-        {
-          "id": 8,
-          "title": "API Logs",
-          "type": "logs",
-          "gridPos": { "x": 0, "y": 24, "w": 24, "h": 10 },
-          "targets": [
-            {
-              "expr": "{namespace=\"domestic\",pod_name=~\"api-.*\"}",
-              "legendFormat": "",
-              "datasource": "Loki"
-            }
-          ],
-          "options": {
-            "showLabels": false,
-            "showTime": true,
-            "sortOrder": "Descending",
-            "wrapLogMessage": true
-          }
-        }
       ]
     }

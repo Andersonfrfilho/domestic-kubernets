@@ -18,34 +18,12 @@ data:
       - url: http://loki:3100/loki/api/v1/push
 
     scrape_configs:
-      - job_name: docker
+      - job_name: domestic
         static_configs:
           - targets:
               - localhost
             labels:
-              job: docker
-              __path__: /var/lib/docker/containers/*/*.log
-      - job_name: kubernetes-pods
-        static_configs:
-          - targets:
-              - localhost
-            labels:
-              job: kubernetes-pods
-              __path__: /var/log/pods/*/*/*.log
+              job: domestic
+              __path__: /var/log/pods/domestic_*/*/*.log
         pipeline_stages:
-          - multiline:
-              firstline: '(^\{|^\d{4}-)'
           - cri: {}
-          - json:
-              expressions:
-                level: level
-                message: message
-                context: context
-                requestId: requestId
-          - labels:
-              level:
-              context:
-              service_name:
-              namespace:
-              pod:
-              container:
