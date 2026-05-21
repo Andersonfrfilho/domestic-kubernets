@@ -16,9 +16,17 @@ spec:
         app: prometheus
     spec:
       initContainers:
-        - name: wait-for-api
+        - name: wait-for-services
           image: busybox:1.36
-          command: [sh, -c, "until nc -z api 3000; do echo waiting for api; sleep 2; done"]
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z api 3000; do echo waiting for api; sleep 2; done
+              until nc -z bff 3001; do echo waiting for bff; sleep 2; done
+              until nc -z worker 3002; do echo waiting for worker; sleep 2; done
+              until nc -z cron 3003; do echo waiting for cron; sleep 2; done
+              echo All services are ready
       containers:
         - name: prometheus
           image: prom/prometheus:latest
