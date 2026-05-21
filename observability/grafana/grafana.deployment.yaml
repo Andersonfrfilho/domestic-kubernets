@@ -115,6 +115,10 @@ spec:
               mountPath: /var/lib/grafana/dashboards/rabbitmq.json
               subPath: rabbitmq.json
               readOnly: true
+            - name: grafana-dashboard-infrastructure-v2
+              mountPath: /var/lib/grafana/dashboards/infrastructure-v2.json
+              subPath: infrastructure-v2.json
+              readOnly: true
           resources:
             requests:
               memory: "256Mi"
@@ -179,3 +183,6 @@ spec:
         - name: grafana-dashboard-rabbitmq
           configMap:
             name: grafana-dashboard-rabbitmq
+        - name: grafana-dashboard-infrastructure-v2
+          configMap:
+            name: grafana-dashboard-infrastructure-v2
