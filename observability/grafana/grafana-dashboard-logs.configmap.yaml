@@ -16,12 +16,12 @@ data:
       "panels": [
         {
           "id": 1,
-          "title": "Errors by Service",
+          "title": "All Domestic Logs",
           "type": "logs",
           "gridPos": { "x": 0, "y": 0, "w": 24, "h": 10 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\"} | json | level=\"ERROR\"",
+              "expr": "{namespace=\"domestic\"}",
               "legendFormat": "",
               "datasource": "Loki"
             }
@@ -40,7 +40,7 @@ data:
           "gridPos": { "x": 0, "y": 10, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\"} | json | message =~ \".*[Ee]mail.*\" or message =~ \".*[Vv]erification.*\"",
+              "expr": "{namespace=\"domestic\"} |= \"mail\" or \"verification\" or \"email\"",
               "legendFormat": "",
               "datasource": "Loki"
             }
@@ -54,12 +54,12 @@ data:
         },
         {
           "id": 3,
-          "title": "Authentication Failures",
+          "title": "Authentication Issues",
           "type": "logs",
           "gridPos": { "x": 12, "y": 10, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\"} | json | message =~ \".*[Aa]uth.*\" or message =~ \".*[Kk]eycloak.*\" or level=\"WARN\"",
+              "expr": "{namespace=\"domestic\"} |= \"auth\" or \"keycloak\" or \"unauthorized\"",
               "legendFormat": "",
               "datasource": "Loki"
             }
@@ -78,7 +78,7 @@ data:
           "gridPos": { "x": 0, "y": 18, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\"} | json | message =~ \".*[Qq]ueue.*\" or message =~ \".*[Rr]abbit.*\" or message =~ \".*AMQP.*\"",
+              "expr": "{namespace=\"domestic\"} |= \"queue\" or \"rabbit\" or \"amqp\"",
               "legendFormat": "",
               "datasource": "Loki"
             }
@@ -97,7 +97,7 @@ data:
           "gridPos": { "x": 12, "y": 18, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\"} | json | message =~ \".*[Dd]atabase.*\" or message =~ \".*[Pp]ostgres.*\" or message =~ \".*[Qq]uery.*\" | level=\"ERROR\"",
+              "expr": "{namespace=\"domestic\"} |= \"database\" or \"postgres\" or \"query\" or \"error\"",
               "legendFormat": "",
               "datasource": "Loki"
             }
@@ -111,12 +111,12 @@ data:
         },
         {
           "id": 6,
-          "title": "Cron Job Failures",
+          "title": "Worker Issues",
           "type": "logs",
           "gridPos": { "x": 0, "y": 26, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\", app=\"cron\"} | json | level=\"ERROR\" or message =~ \".*[Ff]ailed.*\" or message =~ \".*exception.*\"",
+              "expr": "{namespace=\"domestic\"} |= \"worker\" or \"failed\" or \"exception\" or \"error\"",
               "legendFormat": "",
               "datasource": "Loki"
             }
@@ -130,12 +130,12 @@ data:
         },
         {
           "id": 7,
-          "title": "All Warnings",
+          "title": "All Logs with level extraction",
           "type": "logs",
           "gridPos": { "x": 12, "y": 26, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\"} | json | level=\"WARN\"",
+              "expr": "{namespace=\"domestic\", level=\"WARN\"} | {namespace=\"domestic\", level=\"ERROR\"}",
               "legendFormat": "",
               "datasource": "Loki"
             }

@@ -88,26 +88,26 @@ data:
         },
         {
           "id": 5,
-          "title": "Node.js Heap Used (bytes)",
-          "type": "timeseries",
+          "title": "Request Volume (1h)",
+          "type": "stat",
           "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "nodejs_heap_size_used_bytes{job=\"domestic-api\"}",
-              "legendFormat": "Heap Used",
+              "expr": "sum(rate(http_requests_total{service=\"domestic-api\"}[1h]))",
+              "legendFormat": "Req/sec",
               "datasource": "Prometheus"
             }
           ]
         },
         {
           "id": 6,
-          "title": "Active Handles",
+          "title": "Successful Requests %",
           "type": "stat",
           "gridPos": { "x": 12, "y": 16, "w": 6, "h": 8 },
           "targets": [
             {
-              "expr": "nodejs_active_handles{job=\"domestic-api\"}",
-              "legendFormat": "Active Handles",
+              "expr": "sum(rate(http_requests_total{service=\"domestic-api\",status_code=~\"2..\"}[5m])) / sum(rate(http_requests_total{service=\"domestic-api\"}[5m])) * 100",
+              "legendFormat": "Success %",
               "datasource": "Prometheus"
             }
           ]
@@ -132,7 +132,7 @@ data:
           "gridPos": { "x": 0, "y": 24, "w": 24, "h": 10 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\", app=\"api\"}",
+              "expr": "{namespace=\"domestic\"} |= \"api\"",
               "legendFormat": "",
               "datasource": "Loki"
             }
