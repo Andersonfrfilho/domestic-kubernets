@@ -72,18 +72,29 @@ data:
 
       - job_name: 'kubernetes-cadvisor'
         kubernetes_sd_configs:
-          - role: node
+          - role: pod
         scheme: https
         tls_config:
           ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
           insecure_skip_verify: true
         bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
         relabel_configs:
+          # Only scrape pods in domestic namespace
+          - source_labels: [__meta_kubernetes_namespace]
+            action: keep
+            regex: domestic
+          # Map pod labels
           - action: labelmap
-            regex: __meta_kubernetes_node_label_(.+)
-          - target_label: __address__
-            replacement: kubernetes.default.svc:443
+            regex: __meta_kubernetes_pod_label_(.+)
+          # Add pod_name label
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod_name
+          # Add pod_namespace label
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: pod_namespace
+          # Add node label
           - source_labels: [__meta_kubernetes_node_name]
-            regex: (.+)
-            target_label: __metrics_path__
-            replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+            action: replace
+            target_label: node
