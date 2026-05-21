@@ -146,22 +146,48 @@ data:
         },
         {
           "id": 9,
-          "title": "Pod CPU Usage (from metrics)",
+          "title": "Process Memory Usage (MB)",
           "type": "timeseries",
-          "gridPos": { "x": 0, "y": 34, "w": 12, "h": 8 },
+          "gridPos": { "x": 0, "y": 34, "w": 8, "h": 8 },
           "targets": [
             {
-              "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"api-.*\"}[$interval])) by (pod)",
-              "legendFormat": "{{pod}}",
+              "expr": "process_resident_memory_bytes{job=\"domestic-api\"} / 1024 / 1024",
+              "legendFormat": "{{instance}} - Resident",
               "datasource": "Prometheus"
             }
           ]
         },
         {
           "id": 10,
+          "title": "Process CPU Usage (seconds)",
+          "type": "timeseries",
+          "gridPos": { "x": 8, "y": 34, "w": 8, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(process_cpu_seconds_total{job=\"domestic-api\"}[$interval])",
+              "legendFormat": "{{instance}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "title": "Average Pod Size (MB)",
+          "type": "stat",
+          "gridPos": { "x": 16, "y": 34, "w": 8, "h": 8 },
+          "targets": [
+            {
+              "expr": "avg(process_resident_memory_bytes{job=\"domestic-api\"}) / 1024 / 1024",
+              "legendFormat": "Average",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 12,
           "title": "HTTP Request Duration (P99)",
           "type": "timeseries",
-          "gridPos": { "x": 12, "y": 34, "w": 12, "h": 8 },
+          "gridPos": { "x": 0, "y": 42, "w": 24, "h": 8 },
           "targets": [
             {
               "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"domestic-api\"}[$interval])) by (le))",

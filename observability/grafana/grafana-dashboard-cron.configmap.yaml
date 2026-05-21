@@ -133,9 +133,48 @@ data:
         },
         {
           "id": 8,
+          "title": "Process Memory Usage (MB)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 34, "w": 8, "h": 8 },
+          "targets": [
+            {
+              "expr": "process_resident_memory_bytes{job=\"domestic-cron\"} / 1024 / 1024",
+              "legendFormat": "{{instance}} - Resident",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "title": "Process CPU Usage (seconds)",
+          "type": "timeseries",
+          "gridPos": { "x": 8, "y": 34, "w": 8, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(process_cpu_seconds_total{job=\"domestic-cron\"}[$interval])",
+              "legendFormat": "{{instance}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 10,
+          "title": "Average Pod Size (MB)",
+          "type": "stat",
+          "gridPos": { "x": 16, "y": 34, "w": 8, "h": 8 },
+          "targets": [
+            {
+              "expr": "avg(process_resident_memory_bytes{job=\"domestic-cron\"}) / 1024 / 1024",
+              "legendFormat": "Average",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 11,
           "title": "Node.js Heap Allocated (MB)",
           "type": "timeseries",
-          "gridPos": { "x": 0, "y": 34, "w": 12, "h": 8 },
+          "gridPos": { "x": 0, "y": 42, "w": 12, "h": 8 },
           "targets": [
             {
               "expr": "nodejs_heap_size_total_bytes{job=\"domestic-cron\"} / 1024 / 1024",
@@ -145,10 +184,10 @@ data:
           ]
         },
         {
-          "id": 9,
+          "id": 12,
           "title": "Node.js Event Loop Lag",
           "type": "timeseries",
-          "gridPos": { "x": 12, "y": 34, "w": 12, "h": 8 },
+          "gridPos": { "x": 12, "y": 42, "w": 12, "h": 8 },
           "targets": [
             {
               "expr": "nodejs_eventloop_lag_seconds{job=\"domestic-cron\"}",

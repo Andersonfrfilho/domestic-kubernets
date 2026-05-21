@@ -135,26 +135,39 @@ data:
         },
         {
           "id": 9,
-          "title": "Pod CPU Usage",
-          "type": "timeseries",
-          "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+          "title": "JVM Memory Used (MB)",
+          "type": "stat",
+          "gridPos": { "x": 0, "y": 24, "w": 8, "h": 8 },
           "targets": [
             {
-              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"domestic\", pod_name=~\"keycloak-.*\"}[$interval])",
-              "legendFormat": "{{pod_name}}",
+              "expr": "jvm_memory_used_bytes{job=\"keycloak\", area=\"heap\"} / 1024 / 1024",
+              "legendFormat": "Heap",
               "datasource": "Prometheus"
             }
           ]
         },
         {
           "id": 10,
-          "title": "Pod Memory Usage (MB)",
-          "type": "timeseries",
-          "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 },
+          "title": "JVM Memory Limit (MB)",
+          "type": "stat",
+          "gridPos": { "x": 8, "y": 24, "w": 8, "h": 8 },
           "targets": [
             {
-              "expr": "container_memory_working_set_bytes{namespace=\"domestic\", pod_name=~\"keycloak-.*\"} / 1024 / 1024",
-              "legendFormat": "{{pod_name}}",
+              "expr": "jvm_memory_max_bytes{job=\"keycloak\", area=\"heap\"} / 1024 / 1024",
+              "legendFormat": "Limit",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "title": "Memory Usage %",
+          "type": "stat",
+          "gridPos": { "x": 16, "y": 24, "w": 8, "h": 8 },
+          "targets": [
+            {
+              "expr": "(jvm_memory_used_bytes{job=\"keycloak\", area=\"heap\"} / jvm_memory_max_bytes{job=\"keycloak\", area=\"heap\"}) * 100",
+              "legendFormat": "% Used",
               "datasource": "Prometheus"
             }
           ]

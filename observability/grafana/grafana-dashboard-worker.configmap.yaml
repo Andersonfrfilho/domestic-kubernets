@@ -159,9 +159,48 @@ data:
         },
         {
           "id": 10,
+          "title": "Process Memory Usage (MB)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 42, "w": 8, "h": 8 },
+          "targets": [
+            {
+              "expr": "process_resident_memory_bytes{job=\"domestic-worker\"} / 1024 / 1024",
+              "legendFormat": "{{instance}} - Resident",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "title": "Process CPU Usage (seconds)",
+          "type": "timeseries",
+          "gridPos": { "x": 8, "y": 42, "w": 8, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(process_cpu_seconds_total{job=\"domestic-worker\"}[$interval])",
+              "legendFormat": "{{instance}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 12,
+          "title": "Average Pod Size (MB)",
+          "type": "stat",
+          "gridPos": { "x": 16, "y": 42, "w": 8, "h": 8 },
+          "targets": [
+            {
+              "expr": "avg(process_resident_memory_bytes{job=\"domestic-worker\"}) / 1024 / 1024",
+              "legendFormat": "Average",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 13,
           "title": "Node.js GC Pause Time (ms)",
           "type": "timeseries",
-          "gridPos": { "x": 0, "y": 42, "w": 12, "h": 8 },
+          "gridPos": { "x": 0, "y": 50, "w": 12, "h": 8 },
           "targets": [
             {
               "expr": "nodejs_gc_duration_seconds{job=\"domestic-worker\"}",
@@ -171,10 +210,10 @@ data:
           ]
         },
         {
-          "id": 11,
+          "id": 14,
           "title": "Active Handles Count",
           "type": "timeseries",
-          "gridPos": { "x": 12, "y": 42, "w": 12, "h": 8 },
+          "gridPos": { "x": 12, "y": 50, "w": 12, "h": 8 },
           "targets": [
             {
               "expr": "nodejs_active_handles{job=\"domestic-worker\"}",

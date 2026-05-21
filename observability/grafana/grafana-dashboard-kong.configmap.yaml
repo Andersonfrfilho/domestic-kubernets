@@ -109,26 +109,39 @@ data:
         },
         {
           "id": 7,
-          "title": "Kong Pod CPU Usage",
+          "title": "Kong Upstream Health",
           "type": "timeseries",
-          "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+          "gridPos": { "x": 0, "y": 24, "w": 8, "h": 8 },
           "targets": [
             {
-              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"domestic\", pod_name=~\"kong-.*\"}[$interval])",
-              "legendFormat": "{{pod_name}}",
+              "expr": "kong_upstream_target_health{state=\"healthy\"}",
+              "legendFormat": "{{upstream}} - {{target}}",
               "datasource": "Prometheus"
             }
           ]
         },
         {
           "id": 8,
-          "title": "Kong Pod Memory Usage (MB)",
-          "type": "timeseries",
-          "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 },
+          "title": "Kong DB Connections",
+          "type": "stat",
+          "gridPos": { "x": 8, "y": 24, "w": 8, "h": 8 },
           "targets": [
             {
-              "expr": "container_memory_working_set_bytes{namespace=\"domestic\", pod_name=~\"kong-.*\"} / 1024 / 1024",
-              "legendFormat": "{{pod_name}}",
+              "expr": "kong_db_connection_total",
+              "legendFormat": "Connections",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "title": "Kong Requests Total",
+          "type": "stat",
+          "gridPos": { "x": 16, "y": 24, "w": 8, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(kong_http_requests_total)",
+              "legendFormat": "Total",
               "datasource": "Prometheus"
             }
           ]

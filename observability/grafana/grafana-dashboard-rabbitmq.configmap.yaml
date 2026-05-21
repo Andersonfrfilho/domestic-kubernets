@@ -117,26 +117,39 @@ data:
         },
         {
           "id": 8,
-          "title": "RabbitMQ Pod CPU Usage",
-          "type": "timeseries",
-          "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+          "title": "RabbitMQ Memory Limit (MB)",
+          "type": "stat",
+          "gridPos": { "x": 0, "y": 24, "w": 8, "h": 8 },
           "targets": [
             {
-              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"domestic\", pod_name=~\"rabbitmq-.*\"}[$interval])",
-              "legendFormat": "{{pod_name}}",
+              "expr": "rabbitmq_memory_limit / 1024 / 1024",
+              "legendFormat": "Limit",
               "datasource": "Prometheus"
             }
           ]
         },
         {
           "id": 9,
-          "title": "RabbitMQ Pod Memory Usage (MB)",
-          "type": "timeseries",
-          "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 },
+          "title": "RabbitMQ Memory Used (MB)",
+          "type": "stat",
+          "gridPos": { "x": 8, "y": 24, "w": 8, "h": 8 },
           "targets": [
             {
-              "expr": "container_memory_working_set_bytes{namespace=\"domestic\", pod_name=~\"rabbitmq-.*\"} / 1024 / 1024",
-              "legendFormat": "{{pod_name}}",
+              "expr": "rabbitmq_memory_used / 1024 / 1024",
+              "legendFormat": "Used",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 10,
+          "title": "Memory Usage %",
+          "type": "stat",
+          "gridPos": { "x": 16, "y": 24, "w": 8, "h": 8 },
+          "targets": [
+            {
+              "expr": "(rabbitmq_memory_used / rabbitmq_memory_limit) * 100",
+              "legendFormat": "% Used",
               "datasource": "Prometheus"
             }
           ]
