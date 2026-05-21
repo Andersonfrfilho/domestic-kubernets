@@ -130,6 +130,6 @@ data:
             "sortOrder": "Descending",
             "wrapLogMessage": true
           }
-        },
+        }
       ]
     }
