@@ -18,14 +18,40 @@ data:
       - url: http://loki:3100/loki/api/v1/push
 
     scrape_configs:
-      - job_name: kubernetes-pods
-        kubernetes_sd_configs:
-          - role: pods
-            namespace: domestic
+      - job_name: docker
         static_configs:
           - targets:
               - localhost
+            labels:
+              job: docker
+              __path__: /var/lib/docker/containers/*/*.log
+      - job_name: kubernetes-pods
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: kubernetes-pods
+              __path__: /var/log/pods/*/*/*.log
+        relabel_configs:
+          - source_labels: [__path__]
+            regex: '/var/log/pods/([^_]+)_([^_]+)_.*/([^/]+)/0\.log'
+            replacement: '${1}'
+            target_label: namespace
+          - source_labels: [__path__]
+            regex: '/var/log/pods/[^_]+_([^_]+)_.*/([^/]+)/0\.log'
+            replacement: '${1}'
+            target_label: pod
+          - source_labels: [__path__]
+            regex: '/var/log/pods/[^_]+_[^_]+_.*/([^/]+)/0\.log'
+            replacement: '${1}'
+            target_label: container
+          - source_labels: [pod]
+            regex: '([^-]+).*'
+            replacement: '${1}'
+            target_label: service_name
         pipeline_stages:
+          - multiline:
+              firstline: '(^\{|^\d{4}-)'
           - cri: {}
           - json:
               expressions:
@@ -36,6 +62,7 @@ data:
           - labels:
               level:
               context:
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_pod_name]
-            target_label: app
+              service_name:
+              namespace:
+              pod:
+              container:
