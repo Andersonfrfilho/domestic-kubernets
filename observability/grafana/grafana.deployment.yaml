@@ -83,6 +83,18 @@ spec:
               mountPath: /var/lib/grafana/dashboards/cron.json
               subPath: cron.json
               readOnly: true
+            - name: grafana-dashboard-redis
+              mountPath: /var/lib/grafana/dashboards/redis.json
+              subPath: redis.json
+              readOnly: true
+            - name: grafana-dashboard-mongodb
+              mountPath: /var/lib/grafana/dashboards/mongodb.json
+              subPath: mongodb.json
+              readOnly: true
+            - name: grafana-dashboard-logs
+              mountPath: /var/lib/grafana/dashboards/logs.json
+              subPath: logs.json
+              readOnly: true
           resources:
             requests:
               memory: "128Mi"
@@ -123,3 +135,12 @@ spec:
         - name: grafana-dashboard-cron
           configMap:
             name: grafana-dashboard-cron
+        - name: grafana-dashboard-redis
+          configMap:
+            name: grafana-dashboard-redis
+        - name: grafana-dashboard-mongodb
+          configMap:
+            name: grafana-dashboard-mongodb
+        - name: grafana-dashboard-logs
+          configMap:
+            name: grafana-dashboard-logs

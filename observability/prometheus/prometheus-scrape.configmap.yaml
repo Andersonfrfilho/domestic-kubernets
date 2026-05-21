@@ -25,7 +25,7 @@ data:
       - job_name: 'domestic-bff'
         static_configs:
           - targets: ['bff:3001']
-        metrics_path: /bff/metrics
+        metrics_path: /metrics
         scrape_interval: 10s
 
       - job_name: 'domestic-worker'
@@ -39,3 +39,15 @@ data:
           - targets: ['cron:3003']
         metrics_path: /metrics
         scrape_interval: 30s
+
+      - job_name: 'redis'
+        static_configs:
+          - targets: ['redis-exporter:9121']
+        metrics_path: /metrics
+        scrape_interval: 15s
+
+      - job_name: 'mongodb'
+        static_configs:
+          - targets: ['mongodb-exporter:9216']
+        metrics_path: /metrics
+        scrape_interval: 15s
