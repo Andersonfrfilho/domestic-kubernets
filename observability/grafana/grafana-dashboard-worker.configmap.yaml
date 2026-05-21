@@ -113,6 +113,25 @@ data:
           ]
         },
         {
+          "id": 7,
+          "title": "Worker Logs",
+          "type": "logs",
+          "gridPos": { "x": 0, "y": 24, "w": 24, "h": 10 },
+          "targets": [
+            {
+              "expr": "{job=\"kubernetes-pods\"} |= \"worker\" or \"Worker\"",
+              "legendFormat": "",
+              "datasource": "Loki"
+            }
+          ],
+          "options": {
+            "showLabels": false,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          }
+        },
+        {
           "id": 8,
           "title": "Node.js Heap Used (MB)",
           "type": "timeseries",
