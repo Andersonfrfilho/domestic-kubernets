@@ -70,6 +70,12 @@ data:
         metrics_path: /metrics
         scrape_interval: 10s
 
+      - job_name: 'rabbitmq'
+        static_configs:
+          - targets: ['rabbitmq:15692']
+        metrics_path: /metrics
+        scrape_interval: 15s
+
       - job_name: 'kubernetes-cadvisor'
         kubernetes_sd_configs:
           - role: node

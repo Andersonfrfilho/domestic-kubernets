@@ -111,6 +111,10 @@ spec:
               mountPath: /var/lib/grafana/dashboards/postgres.json
               subPath: postgres.json
               readOnly: true
+            - name: grafana-dashboard-rabbitmq
+              mountPath: /var/lib/grafana/dashboards/rabbitmq.json
+              subPath: rabbitmq.json
+              readOnly: true
           resources:
             requests:
               memory: "256Mi"
@@ -172,3 +176,6 @@ spec:
         - name: grafana-dashboard-postgres
           configMap:
             name: grafana-dashboard-postgres
+        - name: grafana-dashboard-rabbitmq
+          configMap:
+            name: grafana-dashboard-rabbitmq

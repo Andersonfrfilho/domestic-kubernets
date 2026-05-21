@@ -1,0 +1,164 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-rabbitmq
+  namespace: domestic
+  labels:
+    app: grafana
+data:
+  rabbitmq.json: |
+    {
+      "title": "RabbitMQ",
+      "uid": "rabbitmq",
+      "version": 1,
+      "refresh": "30s",
+      "time": { "from": "now-1h", "to": "now" },
+      "templating": {
+        "list": [
+          {
+            "name": "interval",
+            "type": "interval",
+            "query": "1m,5m,10m,30m",
+            "current": { "value": "5m" }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Message Rate (msg/s)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(rate(rabbitmq_channel_messages_published_total[$interval])) by (exchange)",
+              "legendFormat": "{{exchange}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "title": "Consumer Count by Queue",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rabbitmq_queue_consumers{namespace=\"domestic\"}",
+              "legendFormat": "{{queue}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "title": "Queue Length by Queue",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rabbitmq_queue_messages_ready{namespace=\"domestic\"}",
+              "legendFormat": "{{queue}} (ready)",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "title": "Connection Count",
+          "type": "stat",
+          "gridPos": { "x": 12, "y": 8, "w": 6, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_connections)",
+              "legendFormat": "Connections",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "title": "Channel Count",
+          "type": "stat",
+          "gridPos": { "x": 18, "y": 8, "w": 6, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_channels)",
+              "legendFormat": "Channels",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "title": "Acked Messages Rate (msg/s)",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "sum(rate(rabbitmq_channel_messages_acked_total[$interval]))",
+              "legendFormat": "Acked",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "title": "Unacked Messages",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rabbitmq_queue_messages_unacked{namespace=\"domestic\"}",
+              "legendFormat": "{{queue}} (unacked)",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "title": "RabbitMQ Pod CPU Usage",
+          "type": "timeseries",
+          "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"domestic\", pod_name=~\"rabbitmq-.*\"}[$interval])",
+              "legendFormat": "{{pod_name}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "title": "RabbitMQ Pod Memory Usage (MB)",
+          "type": "timeseries",
+          "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "container_memory_working_set_bytes{namespace=\"domestic\", pod_name=~\"rabbitmq-.*\"} / 1024 / 1024",
+              "legendFormat": "{{pod_name}}",
+              "datasource": "Prometheus"
+            }
+          ]
+        },
+        {
+          "id": 10,
+          "title": "RabbitMQ Logs",
+          "type": "logs",
+          "gridPos": { "x": 0, "y": 32, "w": 24, "h": 10 },
+          "targets": [
+            {
+              "expr": "{job=\"kubernetes-pods\"} |= \"rabbitmq\" or \"RabbitMQ\"",
+              "legendFormat": "",
+              "datasource": "Loki"
+            }
+          ],
+          "options": {
+            "showLabels": false,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          }
+        }
+      ]
+    }
