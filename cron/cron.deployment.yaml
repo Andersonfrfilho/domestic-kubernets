@@ -2,8 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    build.timestamp: "2026-05-23T13:04:02Z"
-    build.commit: "b19aad269fbd87ac8e1f347d972be7b2c0798bf7"
+    build.timestamp: "2026-05-23T13:35:36Z"
+    build.commit: "062f3d9cd509b88c3f5a4e7ef27fb8bbc44e11bf"
   name: cron
   namespace: domestic
   labels:
@@ -19,8 +19,8 @@ spec:
   template:
     metadata:
       annotations:
-        build.timestamp: "2026-05-23T13:04:02Z"
-        build.commit: "b19aad269fbd87ac8e1f347d972be7b2c0798bf7"
+        build.timestamp: "2026-05-23T13:35:36Z"
+        build.commit: "062f3d9cd509b88c3f5a4e7ef27fb8bbc44e11bf"
       labels:
         app: cron
     spec:
