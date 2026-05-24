@@ -7,3 +7,7 @@ metadata:
   namespace: argocd
 data:
   server.insecure: "true"
+  # Expira o cache de revision (branch → SHA) a cada 1 minuto.
+  # Sem webhooks (home lab), isso garante que o ArgoCD detecte
+  # novos commits no git em até ~1 minuto após o push.
+  reposerver.default.cache.expiration: "1m"

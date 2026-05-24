@@ -8,6 +8,10 @@ metadata:
     app.kubernetes.io/part-of: argocd
 data:
   url: http://argocd.domestic.local
+  # Intervalo de reconciliation. Sem webhooks (home lab), o ArgoCD
+  # usa polling. Combinado com reposerver.default.cache.expiration: 1m,
+  # novos commits são detectados em até ~2 minutos após o push.
+  timeout.reconciliation: 60s
   oidc.config: |
     name: Keycloak
     issuer: http://keycloak.domestic.local/realms/domestic
