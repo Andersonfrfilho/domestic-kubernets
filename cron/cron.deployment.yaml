@@ -2,8 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    build.timestamp: "2026-05-24T20:05:50Z"
-    build.commit: "dc729d8906ba38f41e948011a5e59f40c12f2354"
+    build.timestamp: "2026-05-24T20:07:00Z"
+    build.commit: "a59aaea7202349d1cbc8d152e7189281f83b14c5"
   name: cron
   namespace: domestic
   labels:
@@ -19,8 +19,8 @@ spec:
   template:
     metadata:
       annotations:
-        build.timestamp: "2026-05-24T20:05:50Z"
-        build.commit: "dc729d8906ba38f41e948011a5e59f40c12f2354"
+        build.timestamp: "2026-05-24T20:07:00Z"
+        build.commit: "a59aaea7202349d1cbc8d152e7189281f83b14c5"
       labels:
         app: cron
     spec:
@@ -40,7 +40,7 @@ spec:
         - name: cron
           # Registry local Ubuntu:  192.168.1.100:5000/domestic-cron:latest
           # Daemon minikube:        domestic-cron:local
-          image: ghcr.io/andersonfrfilho/domestic-backend-cron:sha-dc729d8
+          image: ghcr.io/andersonfrfilho/domestic-backend-cron:sha-a59aaea
           imagePullPolicy: Always
           ports:
             - containerPort: 3003
