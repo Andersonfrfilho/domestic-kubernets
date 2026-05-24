@@ -2,8 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    build.timestamp: "2026-05-24T20:00:39Z"
-    build.commit: "56f0bd524bc6e3934050449b774fdfc1bbaff694"
+    build.timestamp: "2026-05-24T20:02:07Z"
+    build.commit: "3952ccad96a4fcfcac70fbee8dfc9d1e38d741d5"
   name: bff
   namespace: domestic
   labels:
@@ -16,8 +16,8 @@ spec:
   template:
     metadata:
       annotations:
-        build.timestamp: "2026-05-24T20:00:39Z"
-        build.commit: "56f0bd524bc6e3934050449b774fdfc1bbaff694"
+        build.timestamp: "2026-05-24T20:02:07Z"
+        build.commit: "3952ccad96a4fcfcac70fbee8dfc9d1e38d741d5"
       labels:
         app: bff
     spec:
@@ -37,7 +37,7 @@ spec:
         - name: bff
           # Registry local Ubuntu:  192.168.1.100:5000/domestic-bff:latest
           # Daemon minikube:        domestic-bff:local
-          image: ghcr.io/andersonfrfilho/domestic-backend-bff:sha-56f0bd5
+          image: ghcr.io/andersonfrfilho/domestic-backend-bff:sha-3952cca
           imagePullPolicy: Always
           ports:
             - containerPort: 3001
