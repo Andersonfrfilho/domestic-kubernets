@@ -2,8 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    build.timestamp: "2026-05-24T20:04:26Z"
-    build.commit: "dc0204d500ba45c585c355ed968e48fbef130941"
+    build.timestamp: "2026-05-24T20:06:30Z"
+    build.commit: "347271f00f174f67795edb246d33a1f3387e482d"
   name: worker
   namespace: domestic
   labels:
@@ -18,8 +18,8 @@ spec:
   template:
     metadata:
       annotations:
-        build.timestamp: "2026-05-24T20:04:26Z"
-        build.commit: "dc0204d500ba45c585c355ed968e48fbef130941"
+        build.timestamp: "2026-05-24T20:06:30Z"
+        build.commit: "347271f00f174f67795edb246d33a1f3387e482d"
       labels:
         app: worker
     spec:
@@ -39,7 +39,7 @@ spec:
         - name: worker
           # Registry local Ubuntu:  192.168.1.100:5000/domestic-worker:latest
           # Daemon minikube:        domestic-worker:local
-          image: ghcr.io/andersonfrfilho/domestic-backend-worker:sha-dc0204d
+          image: ghcr.io/andersonfrfilho/domestic-backend-worker:sha-347271f
           imagePullPolicy: Always
           ports:
             # Health check e Bull Board (dashboard de filas), se habilitado
