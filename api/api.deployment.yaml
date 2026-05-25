@@ -15,8 +15,8 @@ spec:
       labels:
         app: api
       annotations:
-        build.timestamp: "2026-05-25T18:21:24Z"
-        build.commit: "41db8d6a886c80bec835ca054e731b6c1bb418f8"
+        build.timestamp: "2026-05-25T19:50:42Z"
+        build.commit: "a8bab0a8d91aaca475d39b2153179be26a0fc839"
     spec:
       imagePullSecrets:
         - name: ghcr-secret
@@ -40,7 +40,7 @@ spec:
           image: busybox:1.36
           command: [sh, -c, "until nc -z keycloak 8080; do echo waiting for keycloak; sleep 2; done"]
         - name: migrate
-          image: ghcr.io/andersonfrfilho/domestic-backend-api:sha-41db8d6
+          image: ghcr.io/andersonfrfilho/domestic-backend-api:sha-a8bab0a
           imagePullPolicy: Always
           command: ["npm", "run", "migration:run"]
           envFrom:
@@ -50,7 +50,7 @@ spec:
                 name: api-secret
       containers:
         - name: api
-          image: ghcr.io/andersonfrfilho/domestic-backend-api:sha-41db8d6
+          image: ghcr.io/andersonfrfilho/domestic-backend-api:sha-a8bab0a
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
