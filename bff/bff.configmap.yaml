@@ -23,9 +23,18 @@ data:
   CACHE_REDIS_PORT: "6379"
   # MongoDB — BFF usa para cache de dashboard e persistência local
   MONGO_URI: "mongodb://mongo:27017/domestic-bff"
-  # Observability
+  # ─── Observability ──────────────────────────────────────────────────────────
   OTEL_SERVICE_NAME: "domestic-bff"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
+  OTEL_EXPORTER_OTLP_HEADERS: ""
+  OTEL_TRACES_SAMPLER: "parentbased_always_on"
+  OTEL_TRACES_SAMPLER_ARG: "1.0"
+  TRACING_PROVIDER: "opentelemetry"
+  DD_AGENT_HOST: ""
+  DD_ENV: ""
+  DD_SERVICE: "domestic-bff"
+  DD_VERSION: ""
+  GOOGLE_CLOUD_PROJECT: ""
   LOG_LEVEL: "debug"
   # Feature flags
   FEATURE_DOCUMENT_PHOTO_VERIFICATION: "true"

@@ -31,6 +31,10 @@ data:
           - cri: {}
           - multiline:
               firstline: '(^\[|^\{|^\d{4}-)'
+          # Extrai request_id do formato [requestId][timestamp][service:ver][Class.method][LEVEL]
+          # Exemplos de requestId: ZATBA4U9 | no-request-id | cron:job:1abc | msg:email:1abc
+          - regex:
+              expression: '^\[(?P<request_id>[^\]]+)\]\[[^\]]+\]\[(?P<service_name>[^:\]]+)'
           - json:
               expressions:
                 level: level
@@ -46,5 +50,7 @@ data:
               on_error: keep
           - labels:
               level:
+              request_id:
+              service_name:
           - output:
               source: message

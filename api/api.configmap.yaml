@@ -30,9 +30,30 @@ data:
   # Keycloak realm / client (from .env.example)
   KEYCLOAK_REALM: "domestic"
   KEYCLOAK_CLIENT_ID: "domestic-api"
-  # Observability
+  # ─── Observability ──────────────────────────────────────────────────────────
+  # OpenTelemetry — tracing distribuído (Jaeger local; substituir para nuvem)
   OTEL_SERVICE_NAME: "domestic-api"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
+  # Cloud migration: substituir pelo endpoint do coletor na nuvem, ex:
+  #   GCP Cloud Trace:   "https://cloudtrace.googleapis.com"
+  #   AWS X-Ray (ADOT):  "http://aws-otel-collector:4318"
+  #   Datadog:           "http://datadog-agent:4318"
+  #   New Relic:         "https://otlp.nr-data.net:4318"
+  OTEL_EXPORTER_OTLP_HEADERS: ""
+  # ex: "api-key=<token>" (New Relic) | "Authorization=Bearer <token>" (Grafana Cloud)
+  OTEL_TRACES_SAMPLER: "parentbased_always_on"
+  # Prod → "parentbased_traceidratio" com OTEL_TRACES_SAMPLER_ARG="0.1" (10%)
+  OTEL_TRACES_SAMPLER_ARG: "1.0"
+  # Tracing provider: opentelemetry | datadog | cloudtrace | none
+  TRACING_PROVIDER: "opentelemetry"
+  # Datadog (preencher ao migrar para Datadog APM)
+  DD_AGENT_HOST: ""
+  DD_ENV: ""
+  DD_SERVICE: "domestic-api"
+  DD_VERSION: ""
+  # GCP (preencher ao migrar para Google Cloud — credencial via secret)
+  GOOGLE_CLOUD_PROJECT: ""
+  # Logging
   LOG_LEVEL: "debug"
   # E2E test vars — required by the migration datasource validation schema
   DATABASE_POSTGRES_TEST_E2E_HOST: "postgres"

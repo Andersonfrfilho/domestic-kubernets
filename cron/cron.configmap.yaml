@@ -29,7 +29,16 @@ data:
   # Notificações — se o cron dispara emails/push
   STORAGE_MINIO_ENDPOINT: "minio"
   STORAGE_MINIO_PORT: "9000"
-  # Observability
+  # ─── Observability ──────────────────────────────────────────────────────────
   OTEL_SERVICE_NAME: "domestic-cron"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
+  OTEL_EXPORTER_OTLP_HEADERS: ""
+  OTEL_TRACES_SAMPLER: "parentbased_always_on"
+  OTEL_TRACES_SAMPLER_ARG: "1.0"
+  TRACING_PROVIDER: "opentelemetry"
+  DD_AGENT_HOST: ""
+  DD_ENV: ""
+  DD_SERVICE: "domestic-cron"
+  DD_VERSION: ""
+  GOOGLE_CLOUD_PROJECT: ""
   LOG_LEVEL: "debug"
