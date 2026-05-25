@@ -119,7 +119,7 @@ data:
           "gridPos": { "x": 0, "y": 24, "w": 24, "h": 10 },
           "targets": [
             {
-              "expr": "{job=\"kubernetes-pods\"} |= \"bff\" or \"BFF\"",
+              "expr": "{job=\"domestic\", service_name=\"backend-bff\"}",
               "legendFormat": "",
               "datasource": "Loki"
             }

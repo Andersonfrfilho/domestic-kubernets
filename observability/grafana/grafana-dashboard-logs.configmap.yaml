@@ -21,7 +21,7 @@ data:
           "gridPos": { "x": 0, "y": 0, "w": 24, "h": 10 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\"}",
+              "expr": "{job=\"domestic\"}",
               "legendFormat": "",
               "datasource": "Loki"
             }
@@ -40,7 +40,7 @@ data:
           "gridPos": { "x": 0, "y": 10, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\"} |= \"mail\" or \"verification\" or \"email\"",
+              "expr": "{job=\"domestic\"} |= \"mail\" or \"verification\" or \"email\"",
               "legendFormat": "",
               "datasource": "Loki"
             }
@@ -59,7 +59,7 @@ data:
           "gridPos": { "x": 12, "y": 10, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\"} |= \"auth\" or \"keycloak\" or \"unauthorized\"",
+              "expr": "{job=\"domestic\"} |= \"auth\" or \"keycloak\" or \"unauthorized\"",
               "legendFormat": "",
               "datasource": "Loki"
             }
@@ -78,7 +78,7 @@ data:
           "gridPos": { "x": 0, "y": 18, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\"} |= \"queue\" or \"rabbit\" or \"amqp\"",
+              "expr": "{job=\"domestic\"} |= \"queue\" or \"rabbit\" or \"amqp\"",
               "legendFormat": "",
               "datasource": "Loki"
             }
@@ -97,7 +97,7 @@ data:
           "gridPos": { "x": 12, "y": 18, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\"} |= \"database\" or \"postgres\" or \"query\" or \"error\"",
+              "expr": "{job=\"domestic\"} |= \"database\" or \"postgres\" or \"query\" or \"error\"",
               "legendFormat": "",
               "datasource": "Loki"
             }
@@ -116,7 +116,7 @@ data:
           "gridPos": { "x": 0, "y": 26, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\"} |= \"worker\" or \"failed\" or \"exception\" or \"error\"",
+              "expr": "{job=\"domestic\"} |= \"worker\" or \"failed\" or \"exception\" or \"error\"",
               "legendFormat": "",
               "datasource": "Loki"
             }
@@ -135,7 +135,7 @@ data:
           "gridPos": { "x": 12, "y": 26, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\", level=\"WARN\"} | {namespace=\"domestic\", level=\"ERROR\"}",
+              "expr": "{job=\"domestic\", level=\"warn\"} or {job=\"domestic\", level=\"error\"}",
               "legendFormat": "",
               "datasource": "Loki"
             }
@@ -154,7 +154,7 @@ data:
           "gridPos": { "x": 0, "y": 34, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\", app=\"api\"} | tail(100)",
+              "expr": "{job=\"domestic\", service_name=\"backend-api\"}",
               "legendFormat": "",
               "datasource": "Loki"
             }
@@ -173,7 +173,7 @@ data:
           "gridPos": { "x": 12, "y": 34, "w": 12, "h": 8 },
           "targets": [
             {
-              "expr": "{namespace=\"domestic\", app=\"cron\"} | tail(100)",
+              "expr": "{job=\"domestic\", service_name=\"backend-cron\"}",
               "legendFormat": "",
               "datasource": "Loki"
             }

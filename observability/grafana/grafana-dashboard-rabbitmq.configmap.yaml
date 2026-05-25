@@ -161,7 +161,7 @@ data:
           "gridPos": { "x": 0, "y": 32, "w": 24, "h": 10 },
           "targets": [
             {
-              "expr": "{job=\"kubernetes-pods\"} |= \"rabbitmq\" or \"RabbitMQ\"",
+              "expr": "{job=\"domestic\"} |= \"rabbitmq\" or \"RabbitMQ\"",
               "legendFormat": "",
               "datasource": "Loki"
             }
