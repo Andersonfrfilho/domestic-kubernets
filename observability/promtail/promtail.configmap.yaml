@@ -33,16 +33,19 @@ data:
           - replace:
               expression: '\x1b\[[0-9;]*m'
               replace: ''
-          # Extrai request_id do formato [requestId][timestamp][service:ver][Class.method][LEVEL]
-          # Exemplos de requestId: ZATBA4U9 | no-request-id | cron:job:1abc | msg:email:1abc
-          - regex:
-              expression: '^\[(?P<request_id>[^\]]+)\]\[[^\]]+\]\[(?P<service_name>[^:\]]+)'
+          # Extrai do formato JSON (isProduction=true): {"requestId":"...","appName":"...","level":"..."}
+          # Extrai do formato texto (isProduction=false): [requestId][timestamp][service:ver][Class.method][LEVEL]
           - json:
               expressions:
                 level: level
                 message: message
                 timestamp: timestamp
+                request_id: requestId
+                service_name: appName
               on_error: keep
+          # Fallback para texto: extrai request_id e service_name se JSON não encontrou (infra logs, texto)
+          - regex:
+              expression: '^\[(?P<request_id>[^\]]+)\]\[[^\]]+\]\[(?P<service_name>[^:\]]+)'
           - timestamp:
               source: timestamp
               format: RFC3339Nano
