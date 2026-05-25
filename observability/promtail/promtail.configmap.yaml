@@ -25,11 +25,20 @@ data:
             labels:
               job: domestic
               __path__: /var/log/pods/domestic_*/*/*.log
+        # Extrai service_name do nome do pod no path: domestic_<service>-xxx/xxx/0.log
+        # Garante service_name limpo para todos os logs (incluindo NestJS built-in logger)
+        # O pipeline pode sobrescrever com valor mais específico do conteúdo do log.
+        relabel_configs:
+          - source_labels: [__path__]
+            target_label: service_name
+            regex: '.*/domestic_([^-_]+)[^/]*/[^/]+/[0-9]+\.log'
+            replacement: 'backend-$1'
         pipeline_stages:
           - cri: {}
           - multiline:
               firstline: '(^\[|^\{|^\d{4}-)'
-          # Remove ANSI color codes before label extraction (colorize: true in dev containers)
+          # Remove ANSI color codes before label extraction
+          # Suporta colorize: true em dev — sem impacto nos labels do Loki
           - replace:
               expression: '\x1b\[[0-9;]*m'
               replace: ''
