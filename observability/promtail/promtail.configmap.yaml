@@ -25,8 +25,6 @@ data:
             labels:
               job: domestic
               __path__: /var/log/pods/domestic_*/*/*.log
-        decompression: gzip
-        skip_older_than: 72h
         pipeline_stages:
           - cri: {}
           - multiline:
