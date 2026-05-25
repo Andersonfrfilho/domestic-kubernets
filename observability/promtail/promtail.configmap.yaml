@@ -12,7 +12,7 @@ data:
       grpc_listen_port: 0
 
     positions:
-      filename: /tmp/positions.yaml
+      filename: /var/lib/promtail/positions.yaml
 
     clients:
       - url: http://loki:3100/loki/api/v1/push
@@ -29,6 +29,10 @@ data:
           - cri: {}
           - multiline:
               firstline: '(^\[|^\{|^\d{4}-)'
+          # Remove ANSI color codes before label extraction (colorize: true in dev containers)
+          - replace:
+              expression: '\x1b\[[0-9;]*m'
+              replace: ''
           # Extrai request_id do formato [requestId][timestamp][service:ver][Class.method][LEVEL]
           # Exemplos de requestId: ZATBA4U9 | no-request-id | cron:job:1abc | msg:email:1abc
           - regex:
