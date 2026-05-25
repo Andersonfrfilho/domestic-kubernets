@@ -7,7 +7,10 @@ metadata:
     app: migrator
 spec:
   backoffLimit: 3
-  ttlSecondsAfterFinished: 300
+  # Sem ttlSecondsAfterFinished: o Job fica como "Complete" indefinidamente.
+  # Com selfHeal:true no ArgoCD, se ttl deletar o Job, ele seria recriado em loop
+  # (cada ciclo de ~5min domina a fila de reconciliação e impede outros apps de sync).
+  # ArgoCD recria o Job apenas quando o manifesto muda (novo commit com nova imagem).
   template:
     metadata:
       labels:
