@@ -25,7 +25,7 @@ data:
   MONGO_URI: "mongodb://mongo:27017/domestic-bff"
   # ─── Observability ──────────────────────────────────────────────────────────
   OTEL_SERVICE_NAME: "domestic-bff"
-  OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://tempo:4318"
   OTEL_EXPORTER_OTLP_HEADERS: ""
   OTEL_TRACES_SAMPLER: "parentbased_always_on"
   OTEL_TRACES_SAMPLER_ARG: "1.0"

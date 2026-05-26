@@ -33,7 +33,7 @@ data:
   # ─── Observability ──────────────────────────────────────────────────────────
   # OpenTelemetry — tracing distribuído (Jaeger local; substituir para nuvem)
   OTEL_SERVICE_NAME: "domestic-api"
-  OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://tempo:4318"
   # Cloud migration: substituir pelo endpoint do coletor na nuvem, ex:
   #   GCP Cloud Trace:   "https://cloudtrace.googleapis.com"
   #   AWS X-Ray (ADOT):  "http://aws-otel-collector:4318"

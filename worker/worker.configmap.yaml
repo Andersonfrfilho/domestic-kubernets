@@ -33,7 +33,7 @@ data:
   STORAGE_MINIO_PORT: "9000"
   # ─── Observability ──────────────────────────────────────────────────────────
   OTEL_SERVICE_NAME: "domestic-worker"
-  OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://tempo:4318"
   OTEL_EXPORTER_OTLP_HEADERS: ""
   OTEL_TRACES_SAMPLER: "parentbased_always_on"
   OTEL_TRACES_SAMPLER_ARG: "1.0"

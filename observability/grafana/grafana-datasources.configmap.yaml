@@ -10,6 +10,7 @@ data:
     apiVersion: 1
     datasources:
       - name: Prometheus
+        uid: prometheus
         type: prometheus
         access: proxy
         url: http://prometheus:9090
@@ -17,6 +18,7 @@ data:
         editable: false
 
       - name: Loki
+        uid: loki
         type: loki
         access: proxy
         url: http://loki:3100
@@ -24,7 +26,34 @@ data:
         jsonData:
           maxLines: 1000
 
+      - name: Tempo
+        uid: tempo
+        type: tempo
+        access: proxy
+        url: http://tempo:3200
+        editable: false
+        jsonData:
+          tracesToLogsV2:
+            datasourceUid: loki
+            filterByTraceID: true
+            filterBySpanID: false
+            spanStartTimeShift: "-1m"
+            spanEndTimeShift: "1m"
+          tracesToMetrics:
+            datasourceUid: prometheus
+            spanStartTimeShift: "-1m"
+            spanEndTimeShift: "1m"
+          serviceMap:
+            datasourceUid: prometheus
+          nodeGraph:
+            enabled: true
+          search:
+            hide: false
+          lokiSearch:
+            datasourceUid: loki
+
       - name: Jaeger
+        uid: jaeger
         type: jaeger
         access: proxy
         url: http://jaeger:16686
