@@ -42,12 +42,10 @@ data:
       # Propagates W3C traceparent headers downstream for distributed tracing
       - name: opentelemetry
         config:
-          endpoint: "http://tempo:4318/v1/traces"
+          traces_endpoint: "http://tempo:4318/v1/traces"
           resource_attributes:
             service.name: "kong-gateway"
             service.version: "3.8"
-          sampler:
-            name: "always_on"
 
       # Faz Kong enviar Host: keycloak.domestic.local ao proxiar para auth e account.
       - name: request-transformer
