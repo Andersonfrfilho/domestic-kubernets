@@ -240,6 +240,7 @@ data:
 
           # Rotas privadas protegidas por JWT
           - name: bff-private-route
+            regex_priority: 50
             paths:
               - /bff
             strip_path: false
