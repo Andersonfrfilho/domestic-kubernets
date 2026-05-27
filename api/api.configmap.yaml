@@ -48,7 +48,7 @@ data:
   TRACING_PROVIDER: "opentelemetry"
   # TraceID format: short-hash (12 chars) | uuid-no-hyphens (32 chars) | uuid-with-hyphens (36 chars)
   # Use uuid-no-hyphens for Jaeger/Tempo compatibility without hyphens in logs
-  OTEL_ID_FORMAT: "uuid-no-hyphens"
+  OTEL_ID_FORMAT: "uuid-with-hyphens"
   # Datadog (preencher ao migrar para Datadog APM)
   DD_AGENT_HOST: ""
   DD_ENV: ""

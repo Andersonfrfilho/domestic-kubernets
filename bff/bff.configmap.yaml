@@ -30,7 +30,7 @@ data:
   OTEL_TRACES_SAMPLER: "parentbased_always_on"
   OTEL_TRACES_SAMPLER_ARG: "1.0"
   TRACING_PROVIDER: "opentelemetry"
-  OTEL_ID_FORMAT: "uuid-no-hyphens"
+  OTEL_ID_FORMAT: "uuid-with-hyphens"
   DD_AGENT_HOST: ""
   DD_ENV: ""
   DD_SERVICE: "domestic-bff"
