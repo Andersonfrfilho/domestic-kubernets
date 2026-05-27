@@ -55,21 +55,6 @@ data:
               - "w3c"
             clear: []
 
-      # Structured logging plugin — sends request logs to Loki with trace context
-      # Standardizes Kong logs format to match BFF/API services
-      - name: http-log
-        config:
-          http_endpoint: "http://loki:3100/loki/api/v1/push"
-          method: "POST"
-          content_type: "application/json"
-          timeout: 10000
-          keepalive: 60000
-          batch_size: 1
-          # Custom headers to identify Kong as source
-          headers:
-            X-Service-Name: "kong-gateway"
-            X-Service-Version: "3.9"
-
       # Faz Kong enviar Host: keycloak.domestic.local ao proxiar para auth e account.
       - name: request-transformer
         service: auth-service
