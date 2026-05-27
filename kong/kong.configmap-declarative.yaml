@@ -50,6 +50,23 @@ data:
           bandwidth_metrics: true
           upstream_health_metrics: true
 
+      # Global OpenTelemetry plugin — propagates W3C traceparent and exports
+      # Kong spans to Tempo so all services share a single TraceID.
+      - name: opentelemetry
+        config:
+          endpoint: "http://tempo:4318/v1/traces"
+          resource_attributes:
+            service.name: "kong-gateway"
+            service.version: "3.6"
+          http_response_header_for_traceid: "x-trace-id"
+          propagation:
+            default_format: w3c
+            extract:
+              - w3c
+              - b3
+            inject:
+              - w3c
+
       # Faz Kong enviar Host: keycloak.domestic.local ao proxiar para auth e account.
       - name: request-transformer
         service: auth-service
