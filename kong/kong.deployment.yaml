@@ -28,7 +28,7 @@ spec:
           command: [sh, -c, "until nc -z keycloak 8080; do echo waiting for keycloak; sleep 2; done"]
       containers:
         - name: kong
-          image: kong:3.6
+          image: kong:3.7
           ports:
             - containerPort: 8000
               name: proxy
