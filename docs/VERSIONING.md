@@ -30,8 +30,8 @@ Applications follow [Semantic Versioning](https://semver.org/) format: `MAJOR.MI
    - `:0` — Major version (latest 0.x)
 
 ### Current Status
-- API: v0.1.0 (last updated: traceparent propagation, May 27 2026)
-- BFF: v0.1.0 (last updated: traceparent propagation, May 27 2026)
+- API: v0.1.0 (last updated: OTLP span export with full-hash ID format, May 27 2026)
+- BFF: v0.1.0 (last updated: OTLP span export with full-hash ID format, May 27 2026)
 - Cron: v0.1.0 (last updated: nestjs-logger 0.2.4, May 27 2026)
 - Worker: v0.1.0 (last updated: nestjs-logger 0.2.4, May 27 2026)
 
