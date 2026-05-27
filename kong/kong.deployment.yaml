@@ -17,7 +17,7 @@ spec:
       annotations:
         # Atualizar este valor sempre que kong.configmap-declarative.yaml mudar
         # para forçar rolling restart e Kong recarregar o config declarativo.
-        config.version: "2026-05-26-otel"
+        config.version: "2026-05-26-tempo"
     spec:
       initContainers:
         - name: wait-for-api
