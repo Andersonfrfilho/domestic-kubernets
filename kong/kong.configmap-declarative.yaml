@@ -29,18 +29,6 @@ data:
               -----END PUBLIC KEY-----
 
     plugins:
-      # Tracing distribuído — gera span por requisição e propaga W3C traceparent
-      # para o upstream. Envia para Tempo (mesmo backend de API/BFF/Worker/Cron)
-      # para rastreamento unificado no Grafana.
-      - name: opentelemetry
-        config:
-          endpoint: http://tempo:4318/v1/traces
-          resource_attributes:
-            service.name: domestic-kong
-          header_type: w3c
-          queue:
-            max_coalescing_delay: 1
-
       # Global Prometheus metrics plugin
       - name: prometheus
         config:
