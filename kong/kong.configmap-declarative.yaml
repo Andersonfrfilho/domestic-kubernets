@@ -50,6 +50,41 @@ data:
           bandwidth_metrics: true
           upstream_health_metrics: true
 
+      # HTTP Log: Envia logs estruturados para Loki com formato igual aos serviços NestJS
+      # Formato: [requestId][timestamp][service:version][Class.method][LEVEL] - message
+      - name: http-log
+        config:
+          http_endpoint: http://loki:3100/loki/api/v1/push
+          method: POST
+          content_type: application/json
+          flush_timeout: 2
+          timeout: 5
+          queue:
+            max_coalescing_delay: 1
+          # Serializa como JSON para o Loki interpretar
+          custom_fields_by_lua:
+            timestamp: |
+              return ngx.utctime() .. "Z"
+            request_id: |
+              return ngx.ctx.request_id or ngx.var.request_id or "unknown"
+            service: |
+              return "backend-kong"
+            version: |
+              return "3.6"
+            method: |
+              return ngx.req.get_method()
+            uri: |
+              return ngx.var.uri
+            status: |
+              return tonumber(ngx.var.status or "000")
+            upstream_status: |
+              return ngx.var.upstream_status or "000"
+            latency_ms: |
+              return math.floor((tonumber(ngx.var.request_time or "0") * 1000))
+            level: |
+              local status = tonumber(ngx.var.status or "000")
+              return (status >= 500 and "ERROR") or (status >= 400 and "WARN") or "INFO"
+
       # Faz Kong enviar Host: keycloak.domestic.local ao proxiar para auth e account.
       - name: request-transformer
         service: auth-service
@@ -203,6 +238,15 @@ data:
               - /bff/auth/terms/accept
             strip_path: false
 
+          # Rotas públicas de Categories (GET apenas)
+          - name: bff-categories-public-route
+            regex_priority: 94
+            paths:
+              - /bff/auth/categories
+            strip_path: false
+            methods:
+              - GET
+
           # Rotas públicas (app-config, home, search, health)
           - name: bff-public-route
             regex_priority: 90
@@ -232,6 +276,20 @@ data:
                   error_code: 429
                   error_message: |
                     {"statusCode":429,"error":"RATE_LIMIT_EXCEEDED","message":"Muitas buscas em pouco tempo. Tente novamente em alguns instantes."}
+
+          # Rotas privadas de Provider Profile (serviços e disponibilidade)
+          - name: bff-provider-profile-route
+            regex_priority: 92
+            paths:
+              - /bff/auth/providers/me/services
+              - /bff/auth/providers/me/availability
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  key_claim_name: iss
+                  claims_to_verify:
+                    - exp
 
           # Rotas privadas protegidas por JWT
           - name: bff-private-route
