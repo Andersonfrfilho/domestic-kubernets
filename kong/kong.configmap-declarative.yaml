@@ -29,18 +29,6 @@ data:
               -----END PUBLIC KEY-----
 
     plugins:
-      # Tracing distribuído — gera span por requisição e propaga W3C traceparent
-      # para o upstream. Envia para Tempo (mesmo backend de API/BFF/Worker/Cron)
-      # para rastreamento unificado no Grafana.
-      - name: opentelemetry
-        config:
-          endpoint: http://tempo:4318/v1/traces
-          resource_attributes:
-            service.name: domestic-kong
-          header_type: w3c
-          queue:
-            max_coalescing_delay: 1
-
       # Global Prometheus metrics plugin
       - name: prometheus
         config:
@@ -50,40 +38,22 @@ data:
           bandwidth_metrics: true
           upstream_health_metrics: true
 
-      # HTTP Log: Envia logs estruturados para Loki com formato igual aos serviços NestJS
-      # Formato: [requestId][timestamp][service:version][Class.method][LEVEL] - message
-      - name: http-log
+      # Global OpenTelemetry plugin (Kong 3.9+) — exports spans to Tempo
+      # Propagates W3C traceparent headers downstream for distributed tracing
+      - name: opentelemetry
         config:
-          http_endpoint: http://loki:3100/loki/api/v1/push
-          method: POST
-          content_type: application/json
-          flush_timeout: 2
-          timeout: 5
-          queue:
-            max_coalescing_delay: 1
-          # Serializa como JSON para o Loki interpretar
-          custom_fields_by_lua:
-            timestamp: |
-              return ngx.utctime() .. "Z"
-            request_id: |
-              return ngx.ctx.request_id or ngx.var.request_id or "unknown"
-            service: |
-              return "backend-kong"
-            version: |
-              return "3.6"
-            method: |
-              return ngx.req.get_method()
-            uri: |
-              return ngx.var.uri
-            status: |
-              return tonumber(ngx.var.status or "000")
-            upstream_status: |
-              return ngx.var.upstream_status or "000"
-            latency_ms: |
-              return math.floor((tonumber(ngx.var.request_time or "0") * 1000))
-            level: |
-              local status = tonumber(ngx.var.status or "000")
-              return (status >= 500 and "ERROR") or (status >= 400 and "WARN") or "INFO"
+          traces_endpoint: "http://tempo:4318/v1/traces"
+          resource_attributes:
+            service.name: "kong-gateway"
+            service.version: "3.9"
+          propagation:
+            default_format: "w3c"
+            extract:
+              - "w3c"
+              - "b3"
+            inject:
+              - "w3c"
+            clear: []
 
       # Faz Kong enviar Host: keycloak.domestic.local ao proxiar para auth e account.
       - name: request-transformer
@@ -293,6 +263,7 @@ data:
 
           # Rotas privadas protegidas por JWT
           - name: bff-private-route
+            regex_priority: 50
             paths:
               - /bff
             strip_path: false

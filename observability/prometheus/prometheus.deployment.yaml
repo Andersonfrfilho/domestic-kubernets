@@ -30,7 +30,7 @@ spec:
               echo All services are ready
       containers:
         - name: prometheus
-          image: prom/prometheus:latest
+          image: prom/prometheus:2.53.0
           args:
             - "--config.file=/etc/prometheus/prometheus.yml"
             - "--storage.tsdb.path=/prometheus"

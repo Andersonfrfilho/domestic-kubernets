@@ -46,6 +46,9 @@ data:
   OTEL_TRACES_SAMPLER_ARG: "1.0"
   # Tracing provider: opentelemetry | datadog | cloudtrace | none
   TRACING_PROVIDER: "opentelemetry"
+  # TraceID format: short-hash (12 chars) | uuid-no-hyphens (32 chars) | uuid-with-hyphens (36 chars)
+  # Use full-hash for OTLP compatibility (32 hex chars traceId, 16 hex chars spanId)
+  OTEL_ID_FORMAT: "full-hash"
   # Datadog (preencher ao migrar para Datadog APM)
   DD_AGENT_HOST: ""
   DD_ENV: ""

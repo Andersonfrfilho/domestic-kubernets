@@ -24,7 +24,7 @@ spec:
           command: [sh, -c, "until nc -z loki 3100; do echo waiting for loki; sleep 2; done"]
       containers:
         - name: grafana
-          image: grafana/grafana:latest
+          image: grafana/grafana:11.0.0
           ports:
             - containerPort: 3000
               name: http

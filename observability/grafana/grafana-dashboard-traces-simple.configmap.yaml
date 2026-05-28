@@ -1,0 +1,275 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-traces-simple
+  namespace: domestic
+  labels:
+    app: grafana
+data:
+  traces-simple.json: |
+    {
+      "title": "Traces - Search by TraceID",
+      "uid": "traces-simple",
+      "version": 1,
+      "timezone": "browser",
+      "refresh": "30s",
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Search Traces by ID",
+          "type": "stat",
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 2
+          },
+          "targets": [],
+          "options": {
+            "text": {
+              "titleSize": 13
+            },
+            "textMode": "name"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 2,
+          "title": "Recent Traces (API)",
+          "type": "traces",
+          "gridPos": {
+            "x": 0,
+            "y": 2,
+            "w": 12,
+            "h": 14
+          },
+          "targets": [
+            {
+              "datasourceUid": "jaeger",
+              "queryType": "search",
+              "serviceName": "api",
+              "spanName": "",
+              "tags": "",
+              "minDuration": "",
+              "maxDuration": "",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "showSpanFilter": true,
+            "showErrorsOnly": false
+          },
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          }
+        },
+        {
+          "id": 3,
+          "title": "Recent Traces (Example)",
+          "type": "traces",
+          "gridPos": {
+            "x": 12,
+            "y": 2,
+            "w": 12,
+            "h": 14
+          },
+          "targets": [
+            {
+              "datasourceUid": "jaeger",
+              "queryType": "search",
+              "serviceName": "example",
+              "spanName": "",
+              "tags": "",
+              "minDuration": "",
+              "maxDuration": "",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "showSpanFilter": true,
+            "showErrorsOnly": false
+          },
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          }
+        },
+        {
+          "id": 4,
+          "title": "Service Health",
+          "type": "stat",
+          "gridPos": {
+            "x": 0,
+            "y": 16,
+            "w": 6,
+            "h": 8
+          },
+          "targets": [
+            {
+              "datasourceUid": "prometheus",
+              "expr": "count(rate(span_received_total{service_name=~\"api|example|bff|worker|cron\"}[5m]) > 0)",
+              "format": "time_series",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "textMode": "auto",
+            "text": {}
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 5,
+          "title": "Span Rate (last 5m)",
+          "type": "stat",
+          "gridPos": {
+            "x": 6,
+            "y": 16,
+            "w": 6,
+            "h": 8
+          },
+          "targets": [
+            {
+              "datasourceUid": "prometheus",
+              "expr": "sum(rate(span_received_total[5m]))",
+              "format": "time_series",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 6,
+          "title": "Error Rate",
+          "type": "stat",
+          "gridPos": {
+            "x": 12,
+            "y": 16,
+            "w": 6,
+            "h": 8
+          },
+          "targets": [
+            {
+              "datasourceUid": "prometheus",
+              "expr": "sum(rate(span_errors_total[5m])) / sum(rate(span_received_total[5m])) * 100",
+              "format": "time_series",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 7,
+          "title": "Latency P95",
+          "type": "stat",
+          "gridPos": {
+            "x": 18,
+            "y": 16,
+            "w": 6,
+            "h": 8
+          },
+          "targets": [
+            {
+              "datasourceUid": "prometheus",
+              "expr": "histogram_quantile(0.95, sum(rate(span_latency_bucket[5m])) by (le))",
+              "format": "time_series",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "unit": "ms"
+            },
+            "overrides": []
+          }
+        }
+      ],
+      "templating": {
+        "list": [
+          {
+            "name": "service",
+            "label": "Service",
+            "type": "query",
+            "datasource": "Prometheus",
+            "current": {
+              "text": "All",
+              "value": "$__all"
+            },
+            "multi": false,
+            "allValue": ".*",
+            "options": [],
+            "query": "label_values(span_latency_sum, service_name)",
+            "refresh": 1
+          },
+          {
+            "name": "traceId",
+            "label": "Trace ID (optional)",
+            "type": "textbox",
+            "current": {
+              "text": "",
+              "value": ""
+            },
+            "options": {
+              "maxLines": 1
+            },
+            "definition": ""
+          }
+        ]
+      }
+    }

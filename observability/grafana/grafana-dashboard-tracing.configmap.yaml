@@ -1,0 +1,176 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-tracing
+  namespace: domestic
+  labels:
+    app: grafana
+data:
+  tracing.json: |
+    {
+      "title": "Trace Search by TraceID",
+      "uid": "trace-search",
+      "version": 1,
+      "timezone": "browser",
+      "refresh": "30s",
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "panels": [
+        {
+          "id": 1,
+          "title": "TraceID Input",
+          "type": "stat",
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 2
+          },
+          "targets": [],
+          "options": {
+            "text": {
+              "titleSize": 15
+            },
+            "textMode": "name"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "custom": {}
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 2,
+          "title": "Jaeger Trace Viewer",
+          "type": "nodeGraph",
+          "gridPos": {
+            "x": 0,
+            "y": 2,
+            "w": 12,
+            "h": 12
+          },
+          "targets": [
+            {
+              "datasourceUid": "tempo",
+              "queryType": "traceId",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "nodeRadius": 15,
+            "textSize": 28,
+            "textSizeTitle": 26,
+            "textSizeTitleFontScale": 1.0,
+            "textSizeSecondaryFontScale": 0.7,
+            "orientation": "LR",
+            "showLegend": true,
+            "animation": "all"
+          }
+        },
+        {
+          "id": 3,
+          "title": "Trace Details & Logs",
+          "type": "traces",
+          "gridPos": {
+            "x": 12,
+            "y": 2,
+            "w": 12,
+            "h": 12
+          },
+          "targets": [
+            {
+              "datasourceUid": "jaeger",
+              "queryType": "search",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "showSpanFilter": true,
+            "showErrorsOnly": false
+          }
+        },
+        {
+          "id": 4,
+          "title": "Service Dependencies",
+          "type": "nodeGraph",
+          "gridPos": {
+            "x": 0,
+            "y": 14,
+            "w": 24,
+            "h": 10
+          },
+          "targets": [
+            {
+              "datasourceUid": "tempo",
+              "queryType": "traceId",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "nodeRadius": 15,
+            "textSize": 28,
+            "orientation": "TB",
+            "showLegend": true
+          }
+        },
+        {
+          "id": 5,
+          "title": "Logs for TraceID",
+          "type": "logs",
+          "gridPos": {
+            "x": 0,
+            "y": 24,
+            "w": 24,
+            "h": 10
+          },
+          "targets": [
+            {
+              "expr": "{} | json | trace_id=\"${__value.time}\"",
+              "refId": "A",
+              "datasourceUid": "loki"
+            }
+          ],
+          "options": {
+            "showLabels": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          }
+        }
+      ],
+      "templating": {
+        "list": [
+          {
+            "name": "traceId",
+            "label": "Trace ID",
+            "type": "textbox",
+            "current": {
+              "text": "",
+              "value": ""
+            },
+            "options": {
+              "maxLines": 1
+            },
+            "definition": ""
+          },
+          {
+            "name": "service",
+            "label": "Service",
+            "type": "query",
+            "datasource": "Prometheus",
+            "current": {
+              "text": "All",
+              "value": "$__all"
+            },
+            "multi": false,
+            "allValue": ".*",
+            "options": [],
+            "query": "label_values(rate(span_latency_sum[5m]), service_name)",
+            "refresh": 1
+          }
+        ]
+      }
+    }

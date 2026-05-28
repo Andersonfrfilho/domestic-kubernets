@@ -17,7 +17,7 @@ spec:
       annotations:
         # Atualizar este valor sempre que kong.configmap-declarative.yaml mudar
         # para forçar rolling restart e Kong recarregar o config declarativo.
-        config.version: "2026-05-26-tempo"
+        config.version: "2026-05-26-propagation-fix"
     spec:
       initContainers:
         - name: wait-for-api
@@ -28,7 +28,7 @@ spec:
           command: [sh, -c, "until nc -z keycloak 8080; do echo waiting for keycloak; sleep 2; done"]
       containers:
         - name: kong
-          image: kong:3.6
+          image: kong:3.9.1
           ports:
             - containerPort: 8000
               name: proxy
