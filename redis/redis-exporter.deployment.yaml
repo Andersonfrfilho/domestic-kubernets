@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: redis-exporter
-          image: oliver006/redis_exporter:1.60.0
+          image: oliver006/redis_exporter:v1.61.0
           ports:
             - containerPort: 9121
               name: metrics
