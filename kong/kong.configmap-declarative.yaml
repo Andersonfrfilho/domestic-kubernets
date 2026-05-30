@@ -19,13 +19,13 @@ data:
             algorithm: RS256
             rsa_public_key: |
               -----BEGIN PUBLIC KEY-----
-              MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyBOEiVWmDnOOOxWLcZgZ
-              u0Q93SgujouWe3IG8pUfFsTklwyBiNB90L2GnQ7IOWYgipnZ9WAcsT9ynKaSn6CS
-              YbewKb/kv5RA2KrZSdGCfIZXhcl74IdA+F7CWaGR112ms7rwDi++Kmoumy+9E6Fj
-              L1dXXzdxD1B5J8J/JFq52TWDMKyCCn0dk7KeMhZVEwlTJ98pQ9gO8gC2aKEV/L5v
-              6XFZA/fS7ctrTydN0Y+St21c8HxD7LEv7V0WZwMsNaLFliJ36f5Ku2S8w5C8y2Dt
-              7q0vtmEIwQ4TLmyYd8nqtJwROKYW2kyW+c7ht9VW43XACbS6MKzjAeu9UapN1kpz
-              XQIDAQAB
+              MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkj1svGth6VE2OgtrURq8
+              K85byndpRePNLnu/wOI0Zzysnl4Ec5Oew4aGWg1lmc9Q53A2ReI3zB9TL9FEFACR
+              bJAGC0YCSRfi4lnUVM3OG/ln3MilH/DO6lAnE5/QKgWVyzo60zcnWxYxkxwNU5lG
+              eqyRrIVx8U54WSu+3zxRjD1BMUcV3fF+pmu77WA1zU4Y42FZGmCZSumcecWrxXdO
+              0eKxAgMVsCMnZgDFrIOozpkS0yTCuvD13IT/dZz3SDNpfiNlXXTBc6UEwIK86Q1m
+              eYHVgj8tu7p+EQuVZvqC3dsuTILvZ69odh61uXywGfF7gDJV9iVFCY0zfKQn0zbH
+              ZwIDAQAB
               -----END PUBLIC KEY-----
 
     plugins:
