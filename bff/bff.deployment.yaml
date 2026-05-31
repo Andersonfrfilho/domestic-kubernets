@@ -2,8 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    build.timestamp: "2026-05-31T22:29:10Z"
-    build.commit: "b79be585c4178edb74ff17a1d742c5d5fcbf4078"
+    build.timestamp: "2026-05-31T22:29:57Z"
+    build.commit: "55ab50075b76d4cb96d4769af7041ffd9ede0355"
   name: bff
   namespace: domestic
   labels:
@@ -16,8 +16,8 @@ spec:
   template:
     metadata:
       annotations:
-        build.timestamp: "2026-05-31T22:29:10Z"
-        build.commit: "b79be585c4178edb74ff17a1d742c5d5fcbf4078"
+        build.timestamp: "2026-05-31T22:29:57Z"
+        build.commit: "55ab50075b76d4cb96d4769af7041ffd9ede0355"
       labels:
         app: bff
     spec:
